@@ -1,0 +1,31 @@
+<div class="mirador" id="{{ .Get 0 }}">
+    <script type="text/javascript">
+    var mirador = Mirador.viewer({
+        "id": "{{ .Get 0 }}",
+        "manifests": {
+            "https://repository.library.brown.edu/iiif/presentation/bdr:{{ .Get 0 }}/manifest.json": {
+                "provider": "Brown University Library"
+            }
+        },
+        "windows": [{
+            "loadedManifest": "https://repository.library.brown.edu/iiif/presentation/bdr:{{ .Get 0 }}/manifest.json",
+            "canvasIndex": 2,
+            "thumbnailNavigationPosition": 'far-bottom'
+        }],
+        themes: {
+            light: {
+                palette: {
+                    type: 'light',
+                    primary: {
+                        main: '#a3bc7e',
+                    },
+                    secondary: {
+                        main: '#c75037',
+                    },
+                },
+            },
+        },
+    });
+
+    </script>
+</div>

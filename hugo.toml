@@ -1,0 +1,20 @@
+baseURL = 'https://example.org/'
+locale = 'en-us'
+title = 'Literary Men and General Readers 1849-1949: Lives and Pseudonyms of Contributors to Notes and Queries'
+theme = 'brown-hugo-starter'
+sectionPagesMenu = 'main'
+
+
+[markup]
+  [markup.goldmark]
+    [markup.goldmark.extensions]
+		footnote = true
+    [markup.goldmark.renderer]
+      unsafe = true
+
+
+[menu]
+  [[menu.main]]
+    name = 'Brown Digital Repository'
+    url = 'https://repository.library.brown.edu/studio/collections/bdr:88np2gke/'
+    weight = 100

@@ -1,0 +1,23 @@
+<div id="data-table"></div>
+{{ $contrib := resources.Get "/js/get-contributors-data.js"}}
+{{ with $contrib }}
+<script type="module" src="{{ .RelPermalink }}"></script>
+{{ end }}
+
+{{ $articles := resources.Get "/js/get-articles-data.js"}}
+{{ with $articles }}
+<script type="module" src="{{ .RelPermalink }}"></script>
+{{ end }}
+
+{{ $join := resources.Get "/js/join-data.js"}}
+{{ with $join }}
+<script type="module" src="{{ .RelPermalink }}"></script>
+{{ end }}
+
+{{ $js := ".js" }}
+{{ $src := .Get 0 | plainify }} 
+{{ $src := (print "/js/" $src $js ) }}
+{{ $script := resources.Get $src }}
+{{ with $script }}
+<script type="module" src="{{ .RelPermalink }}"></script>
+{{ end }}
