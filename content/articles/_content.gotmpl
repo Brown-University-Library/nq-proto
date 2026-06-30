@@ -1,0 +1,41 @@
+{{/* for now, get the json from a local file */}}
+{{ $data := dict }}
+{{ $path := "joined_data.json" }}
+{{ with resources.Get $path }}
+  {{ with . | transform.Unmarshal }}
+    {{ $data = . }}
+  {{ end }}
+{{ else }}
+  {{ errorf "Unable to get local resource %q" $path }}
+{{ end }}
+
+{{/* Loop through each top-level object solely to reach the nested articles */}}
+{{ range $data }}
+  
+  {{/* Loop through each article entry within the articles array */}}
+  {{ range .articles }}
+    {{ $article := . }}
+    {{ $params := dict }}
+    
+    {{/* Add article-specific fields, excluding title and missing contributor keys */}}
+    {{ range $k, $v := $article }}
+      {{ if and (ne $k "title") (not (strings.Contains $k "CONTRIBUTOR")) }}
+        {{ $params = merge $params (dict $k $v) }}
+      {{ end }}
+    {{ end }}
+    
+    {{/* Build the page path outside the map using the article's own authorId field */}}
+    {{ $slug := urls.URLize $article.title }}
+    {{ $pagePath := printf "%s/%s" $article.authorId $slug }}
+    
+    {{/* Package page data and send to Hugo to build */}}
+    {{ $page := dict 
+      "kind" "page"
+      "title" $article.title
+      "path" $pagePath
+      "params" $params
+    }}
+    {{ $.AddPage $page }}
+    
+  {{ end }}
+{{ end }}

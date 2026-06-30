@@ -155,14 +155,14 @@ function buildTabulator(joinedData) {
   });
 
   //trigger download of data.csv file
-document.getElementById("download-csv").addEventListener("click", function(){
+/* document.getElementById("download-csv").addEventListener("click", function(){
     table.download("csv", "nq-data.csv");
 });
 
 //trigger download of data.xlsx file
 document.getElementById("download-xlsx").addEventListener("click", function(){
     table.download("xlsx", "nq-data.xlsx", {sheetName:"My Data"});
-});
+});*/
 }
 
 // main: load data and build table
@@ -175,6 +175,7 @@ function main() {
         contributorsData,
       );
       buildTabulator(joinedData);
+      console.log(joinedData);
     })
     .catch((error) => {
       console.error("Error loading data:", error);

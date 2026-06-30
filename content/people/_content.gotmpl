@@ -1,0 +1,71 @@
+{{/* for now, get the json from a local file */}}
+{{ $data := dict }}
+{{ $path := "joined_data.json" }}
+{{ with resources.Get $path }}
+  {{ with . | transform.Unmarshal }}
+    {{ $data = . }}
+  {{ end }}
+{{ else }}
+  {{ errorf "Unable to get local resource %q" $path }}
+{{ end }}
+
+{{/* Add pages and page resources. */}}
+{{ range $data }}
+
+  {{/* Add page. */}}
+
+    // Loop through a given person's articles to extract data
+    {{ $articles := slice }} // create an empty array
+    {{ $article := dict
+        "info" .articles
+    }}
+    {{ range $k, $v := $article }}
+    {{ range $k1, $v1 := $v }}
+    {{ range $k2, $v2 := $v1 }}
+        {{ if eq $k2 "title" }}
+        {{ $articles = $articles | append $v2 }}
+        {{ end }}
+    {{ end }}
+    {{ end }}
+    {{ end }}
+
+    // Remapping keys with spaces to single-term variables
+    {{ $name := index . "name in standard form" }}
+    {{ $altname := index . "alternative name" }}
+    {{ $description := index . "short description" }}
+    {{ $circa := index . "± birth year" }}
+    {{ $birth := index . "birth year" }}
+    {{ $death := index . "death year" }}
+
+
+  // Create arrays to hold person-specific data in params
+  {{ $params := dict 
+    "date" "2023-10-15T13:18:50-07:00"
+    "kind" "page"
+    "draft" "false"
+    "notes" .notes
+    "biography" .biography
+    "gender" .gender
+    "articles" $articles
+    "altname" $altname
+    "description" $description
+    "circa" $circa
+    "birth" $birth
+    "death" $death
+    "authorId" .authorId
+    }}
+
+    {{ $content := dict 
+    "mediaType" "text/html" 
+    }}
+
+  {{ $page := dict
+    "params" $params 
+    "content" $content
+    "path" .authorId
+    "title" $name
+  }}
+
+  {{ $.AddPage $page }}
+
+{{ end }}

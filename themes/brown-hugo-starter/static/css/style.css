@@ -14,8 +14,6 @@ body {
     color: var(--ink);
     font-size: 125%;
     line-height: 1.5;
-    /*max-width: 45rem;
-  padding: 1rem;*/
     margin: 0 auto;
 }
 
@@ -71,6 +69,11 @@ body {
 }
 
 /* LISTS */
+ul.list {
+    columns: 3;
+    column-gap: 2rem;
+    padding-left: 0;
+}
 
 .post-snippet {
     margin-bottom: 1rem;

@@ -1,19 +1,14 @@
 {{ partial "header.html" . }}
-
 <h1>{{ .Title }}</h1>
 
-
+<ul class="list">
 {{ range.Data.Pages }}
-<article class="post-snippet">
-  <h3>
+<li>
     <a href="{{ .RelPermalink }}">{{ .Title }}</a>
-  </h3>
-</article>
-
+</li>
 {{ end }}
-
+</ul>
 {{ .Content }}
-
 
 
 {{ partial "footer.html" . }}

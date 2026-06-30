@@ -1,0 +1,21 @@
+{{ partial "header.html" . }} 
+  <h1>{{ .Title }}</h1>
+  <p><a href="/people/{{.Params.authorId}}">{{.Params.standardname }}</a></p>
+  <dl>
+{{ range $k, $v := .Params }}
+  {{ if $v }}
+    {{ if eq $k "authorid" }}
+      {{/* Skip printing authorId entirely */}}
+    {{ else if eq $k "url" }}
+      <dt>{{ $k }}</dt>
+      <dd><a href="{{ $v }}" target="_blank" rel="noopener">{{ $v }}</a></dd>
+    {{ else if eq $k "biography" }}
+      <dt>{{ $k }}</dt><dd>{{ $v | safeHTML }}</dd>
+    {{ else }}
+      <dt>{{ $k }}</dt><dd>{{ $v }}</dd>
+    {{ end }}
+  {{ end }}
+{{ end }}
+  </dl>
+
+{{ partial "footer.html" . }} 
