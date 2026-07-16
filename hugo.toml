@@ -1,4 +1,4 @@
-baseURL = 'https://example.org/'
+baseURL = '/'
 locale = 'en-us'
 title = 'Literary Men and General Readers 1849-1949: Lives and Pseudonyms of Contributors to Notes and Queries'
 theme = 'brown-hugo-starter'
