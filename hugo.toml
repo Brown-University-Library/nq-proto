@@ -12,6 +12,8 @@ sectionPagesMenu = 'main'
     [markup.goldmark.renderer]
       unsafe = true
 
+[security]
+  allowContent = ['^text/markdown$', '^text/html$']
 
 [menu]
   [[menu.main]]
