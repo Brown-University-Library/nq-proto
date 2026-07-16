@@ -1,6 +1,8 @@
+{{ $finder := .Params.authorId }}
+
 {{ partial "header.html" . }} 
   <h1>{{ .Title }}</h1>
-  <p><a href="/people/{{.Params.authorId}}">{{.Params.standardname }}</a></p>
+  <p><a href="/nq-proto/people/{{.Params.authorId}}">{{.Params.standardname }}</a></p>
   <dl>
 {{ range $k, $v := .Params }}
   {{ if $v }}
@@ -10,7 +12,7 @@
       <dt>{{ $k }}</dt>
       <dd><a href="{{ $v }}" target="_blank" rel="noopener">{{ $v }}</a></dd>
     {{ else if eq $k "biography" }}
-      <dt>{{ $k }}</dt><dd>{{ $v | safeHTML }}</dd>
+      <dt>{{ $k }}</dt><dd>{{ $v  | markdownify | safeHTML }}</dd>
     {{ else }}
       <dt>{{ $k }}</dt><dd>{{ $v }}</dd>
     {{ end }}

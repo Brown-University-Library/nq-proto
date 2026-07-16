@@ -1,7 +1,7 @@
 +++
 date = '2026-06-10T15:30:08-04:00'
 draft = false
-title = 'Contributors'
+title = 'Contributor table'
 menu = 'main'
 +++
 {{< tabulator "contributors" >}}

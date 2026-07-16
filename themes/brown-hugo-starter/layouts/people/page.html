@@ -3,21 +3,20 @@
 {{ partial "header.html" . }} 
   <h1>{{ .Title }}</h1>
 
-
   {{ .Content }}
   {{ if .Params.altname }}
   <p><em>also known as {{ .Params.altname }}</em></p>
   {{ end }}
   <p>{{ .Params.circa }} {{ .Params.birth }} - {{ .Params.death }}</p>
 
-  <p>Notes: {{ .Params.notes }}</p>
-  <p>Biography: {{ .Params.biography | safeHTML }}</p>
+  <p>Notes: {{ .Params.notes | safeHTML }}</p>
+  <p>Biography: {{ .Params.biography | safeHTML | markdownify }}</p>
 
   <h2>Articles</h2>
   <ul>
       {{ range $k, $v := .Params.articles }} 
         {{ $slug := urls.URLize $v }}
-        {{ $pagePath := printf "/articles/%s/%s" $finder $slug }}
+        {{ $pagePath := printf "/nq-proto/articles/%s/%s" $finder $slug }}
 
         <li><a href="{{ $pagePath }}">{{ $v }}</a></li>
       {{ end }} 
