@@ -6,7 +6,8 @@
 
     <title>{{ if not .IsHome }}{{ .Title }} | {{ end }}{{ .Site.Title }}</title>
 
-    <link rel="stylesheet" href="/css/style.css" type="text/css" media="all" />
+    {{ $style := resources.Get "css/style.css" | resources.Minify | resources.Fingerprint }}
+    <link rel="stylesheet" href="{{ $style.Permalink }}">
 
     {{ with .OutputFormats.Get "rss" -}} {{ printf `
     <link rel="%s" type="%s" href="%s" title="%s" />
