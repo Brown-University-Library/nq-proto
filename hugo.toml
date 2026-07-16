@@ -19,5 +19,6 @@ sectionPagesMenu = 'main'
     url = 'https://repository.library.brown.edu/studio/collections/bdr:88np2gke/'
     weight = 100
 
-[params]
-  debug = true
+[caches]
+  [caches.images]
+    dir = ':cacheDir/images'
