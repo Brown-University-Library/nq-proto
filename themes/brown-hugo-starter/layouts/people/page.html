@@ -7,10 +7,14 @@
   {{ if .Params.altname }}
   <p><em>also known as {{ .Params.altname }}</em></p>
   {{ end }}
-  <p>{{ .Params.circa }} {{ .Params.birth }} - {{ .Params.death }}</p>
+  <p>{{ .Params.circa }} {{ .Params.birth }} {{ if .Params.death }} - {{ .Params.death }}{{ end }}</p>
 
+  {{ if .Params.notes }}
   <p>Notes: {{ .Params.notes | safeHTML }}</p>
+  {{ end }}
+  {{ if .Params.biography }}
   <p>Biography: {{ .Params.biography | safeHTML | markdownify }}</p>
+  {{ end }}
 
   <h2>Articles</h2>
   <ul>

@@ -1,0 +1,14 @@
+{{ partial "header.html" . }} 
+
+<h1>Signature: {{ .Title }}</h1>
+
+<ul>
+  {{ range .Params.articles }}
+    <li>
+      {{ .title }} by <a href="{{ printf "/nq-proto/people/%s" .authorId }}">{{ .standardname }}</a> 
+      — <em>{{ .date }}</em>
+    </li>
+  {{ end }}
+</ul>
+
+{{ partial "footer.html" . }} 

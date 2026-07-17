@@ -1,0 +1,55 @@
+{{/* for now, get the json from a local file */}}
+{{ $data := dict }}
+{{ $path := "joined_data.json" }}
+{{ with resources.Get $path }}
+  {{ with . | transform.Unmarshal }}
+    {{ $data = . }}
+  {{ end }}
+{{ else }}
+  {{ errorf "Unable to get local resource %q" $path }}
+{{ end }}
+
+{{/* Initialize a scratchpad to temporarily group articles by their signature */}}
+{{ $scratch := newScratch }}
+{{ $scratch.Set "signatures" dict }}
+
+{{/* Loop through data to group entries by signature */}}
+{{ range $data }}
+  {{ range .articles }}
+    {{ $sig := .signature }}
+    {{ $articleItem := dict "title" .title "authorId" .authorId "date" .date "standardname" .standardname "url" .url }}
+    
+    {{ $sigs := $scratch.Get "signatures" }}
+    {{ $currentSigData := index $sigs $sig }}
+    
+    {{ if not $currentSigData }}
+      {{/* First time seeing this signature: initialize with an array holding this article */}}
+      {{ $scratch.SetInMap "signatures" $sig (dict "signature" $sig "articles" (slice $articleItem)) }}
+    {{ else }}
+      {{/* Signature exists: retrieve existing array and append this new article info */}}
+      {{ $updatedArticles := $currentSigData.articles | append $articleItem }}
+      {{ $scratch.SetInMap "signatures" $sig (dict "signature" $sig "articles" $updatedArticles) }}
+    {{ end }}
+  {{ end }}
+{{ end }}
+
+{{/* Loop through our grouped signatures map to generate the unique pages */}}
+{{ range $sig, $sigData := $scratch.Get "signatures" }}
+  
+  {{/* Keep the collected articles metadata accessible in the layout template */}}
+  {{ $params := dict "articles" $sigData.articles }}
+  
+  {{/* Build the unique signature page path outside the map */}}
+  {{ $slug := urls.URLize $sig }}
+  {{ $pagePath := printf "/%s" $slug }}
+  
+  {{/* Package page data and pass to Hugo */}}
+  {{ $page := dict 
+    "kind" "page"
+    "title" $sig
+    "path" $pagePath
+    "params" $params
+  }}
+  {{ $.AddPage $page }}
+  
+{{ end }}

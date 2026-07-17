@@ -15,12 +15,6 @@ sectionPagesMenu = 'main'
 [security]
   allowContent = ['^text/markdown$', '^text/html$']
 
-[menu]
-  [[menu.main]]
-    name = 'Brown Digital Repository'
-    url = 'https://repository.library.brown.edu/studio/collections/bdr:88np2gke/'
-    weight = 100
-
 [caches]
   [caches.images]
     dir = ':cacheDir/images'

@@ -2,7 +2,7 @@
 
 {{ partial "header.html" . }} 
   <h1>{{ .Title }}</h1>
-  <p><a href="/nq-proto/people/{{.Params.authorId}}">{{.Params.standardname }}</a></p>
+  <p><a href="/nq-proto/people/{{.Params.authorId}}">{{.Params.standardname }}</a>, writing as {{.Params.signature }}</p>
   <dl>
 {{ range $k, $v := .Params }}
   {{ if $v }}
