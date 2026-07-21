@@ -1,4 +1,7 @@
-{{/* Fetch the JSON resource */}}
+{{/* Parse joined_data.json to group all authors and their 
+  published articles under unique, trimmed signature entries. */}}
+
+{{/* 1. FETCH AND UNMARSHAL JSON DATA */}}
 {{ $data := dict }}
 {{ $path := "joined_data.json" }}
 {{ with resources.Get $path }}
@@ -6,20 +9,26 @@
     {{ $data = . }}
   {{ end }}
 {{ else }}
-  {{ errorf "Unable to get local resource %q" $path }}
+  {{ errorf "Unable to find or parse local resource %q" $path }}
 {{ end }}
 
-{{/* Aggregate people & citations under each signature */}}
+{{/* 2. GROUP AUTHORS & CITATIONS BY SIGNATURE
+   $sigMap will hold key-value pairs where:
+   - Key: Cleaned/trimmed signature string (e.g. "C. T. B.", "é", "α")
+   - Value: Slice of author objects, each containing their display label,
+     authorId, and a list of citation details for that signature.
+*/}}
 {{ $sigMap := dict }}
 
 {{ range $data }}
 
+  {{/* Extract person metadata */}}
   {{ $name := index . "name in standard form" }}
   {{ $birth := index . "birth year" }}
   {{ $death := index . "death year" }}
   {{ $authorId := .authorId }}
 
-  {{/* Format author label with lifespan */}}
+  {{/* Format the author's display label with lifespan details if available. This information is used on the individual pseudonym page. */}}
   {{ $personLabel := $name }}
   {{ if and $birth $death }}
     {{ $personLabel = printf "%s (%s–%s)" $name $birth $death }}
@@ -29,18 +38,19 @@
     {{ $personLabel = printf "%s (d. %s)" $name $death }}
   {{ end }}
 
-  {{/* Group citations by signature for this person */}}
+  {{/* Track citations grouped by signature for this specific author */}}
   {{ $articlesBySig := dict }}
 
   {{ range .articles }}
     {{ $art := . }}
     {{ with .signature }}
+      {{/* Clean leading/trailing whitespace from the signature */}}
       {{ $cleanSig := trim . " \t\n\r" }}
 
       {{ if ne $cleanSig "" }}
+        {{/* Construct compact NQ citation string: NQ [series].[volume].[page] */}}
         {{ $citeParts := slice }}
         {{ with $art.series }}{{ $citeParts = $citeParts | append . }}{{ end }}
-        {{ $withVolume := $art.volume }}
         {{ with $art.volume }}{{ $citeParts = $citeParts | append . }}{{ end }}
         {{ with $art.page }}{{ $citeParts = $citeParts | append . }}{{ end }}
 
@@ -49,14 +59,17 @@
           {{ $nqCitation = printf "NQ %s" (delimit $citeParts ".") }}
         {{ end }}
 
-        {{ $citation := dict "title" $art.title "nq" $nqCitation "url" $art.url }}
+        {{/* Package citation info for this article */}}
+        {{ $citation := dict "title" (trim $art.title " \t\n\r") "nq" $nqCitation "url" $art.url }}
+        
+        {{/* Append to this author's list for this signature */}}
         {{ $existing := index $articlesBySig $cleanSig | default slice }}
         {{ $articlesBySig = merge $articlesBySig (dict $cleanSig ($existing | append $citation)) }}
       {{ end }}
     {{ end }}
   {{ end }}
 
-  {{/* Merge into global signature map */}}
+  {{/* Merge this author's signatures into the global $sigMap */}}
   {{ range $sig, $citations := $articlesBySig }}
     {{ $existingPeople := index $sigMap $sig | default slice }}
     
@@ -72,25 +85,44 @@
 
 {{ end }}
 
-{{/* Generate Signature pages */}}
+{{/* 3. GENERATE DYNAMIC CONTENT ADAPTER PAGES
+   Loops through the aggregated signatures and generates a dynamic page
+   for each pseudonym within the /pseudonyms/ section.
+*/}}
 {{ range $sig, $people := $sigMap }}
 
+  {{/* Extract first character for glossary/alphabetical indexing */}}
   {{ $glossary := upper (substr $sig 0 1) }}
 
+  {{/* 
+     SAFE PATH & SLUG GENERATION:
+     1. urlize converts standard strings to URL-friendly slugs (e.g. "C. T. B." -> "c-t-b").
+     2. If non-Latin/special characters (e.g. Hebrew/Greek) get stripped out by urlize,
+        anchorize serves as a safe fallback to prevent empty paths.
+  */}}
+  {{ $safePath := $sig | urlize }}
+  {{ if eq $safePath "" }}
+    {{ $safePath = $sig | anchorize }}
+  {{ end }}
+
+  {{/* Build front matter params for the generated page */}}
   {{ $params := dict 
     "kind" "page"
-    "draft" false
+    "draft" "false"
     "people" $people
     "glossary" $glossary
   }}
 
+  {{/* Define the content page dict */}}
   {{ $page := dict
     "params" $params 
     "content" (dict "mediaType" "text/html")
-    "path" (urlize $sig)
+    "path" $safePath
     "title" $sig
+
   }}
 
+  {{/* Register the page into Hugo's site tree */}}
   {{ $.AddPage $page }}
 
 {{ end }}

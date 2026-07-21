@@ -21,3 +21,5 @@ sectionPagesMenu = 'main'
 
 [taxonomies]
 glossary = 'glossary'
+
+disableKinds = ['taxonomy']
