@@ -1,0 +1,50 @@
+{{ partial "header.html" . }}
+<h1>{{ .Title }}</h1>
+
+{{ $groupedPages := .Pages.GroupByParam "glossary" }}
+
+{{ if $groupedPages }}
+  {{/* Anchor Navigation Bar */}}
+  <nav class="glossary-nav">
+    <ul>
+      {{ range $groupedPages }}
+        {{ if .Key }}
+          <li>
+            <a href="#letter-{{ .Key }}">{{ .Key }}</a>
+          </li>
+        {{ else }}
+          <li>
+            <a href="#letter-other">Other</a>
+          </li>
+        {{ end }}
+      {{ end }}
+    </ul>
+  </nav>
+
+  <hr />
+
+  {{/* Grouped Content Sections */}}
+  {{ range $groupedPages }}
+    {{ $sectionId := cond (ne .Key "") (printf "letter-%s" .Key) "letter-other" }}
+
+    <section id="{{ $sectionId }}">
+      <h2>
+        {{ if .Key }}
+          {{ .Key }}
+        {{ else }}
+          Other / Uncategorized
+        {{ end }}
+      </h2>
+
+      <ul class="list">
+        {{ range .Pages }}
+          <li>
+            <a href="{{ .RelPermalink }}">{{ .Title }}</a>
+          </li>
+        {{ end }}
+      </ul>
+    </section>
+  {{ end }}
+{{ end }}
+
+{{ partial "footer.html" . }}

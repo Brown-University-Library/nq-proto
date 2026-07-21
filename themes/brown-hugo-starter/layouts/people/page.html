@@ -1,28 +1,73 @@
 {{ $finder := .Params.authorId }}
 
 {{ partial "header.html" . }} 
-  <h1>{{ .Title }}</h1>
+<h1>
+  {{- .Title -}}
+
+  {{/* Build the lifespan string inside parentheses if either birth or death exists */}}
+  {{- if or .Params.birth .Params.death -}}
+    {{- $lifespan := slice -}}
+    
+    {{/* Handle birth year with optional circa */}}
+    {{- if .Params.birth -}}
+      {{- $b := .Params.birth -}}
+      {{- if .Params.circa -}}
+        {{- $b = printf "%s %s" .Params.circa .Params.birth -}}
+      {{- end -}}
+      {{- $lifespan = $lifespan | append $b -}}
+    {{- else -}}
+      {{/* If no birth year but death year exists, mark as unknown birth */}}
+      {{- $lifespan = $lifespan | append "?" -}}
+    {{- end -}}
+
+    {{/* Handle death year */}}
+    {{- if .Params.death -}}
+      {{- $lifespan = $lifespan | append .Params.death -}}
+    {{- end -}}
+
+    {{/* Format lifespan as (birth–death) or (birth) */}}
+    {{ printf " (%s)" (delimit $lifespan "–") }}
+  {{- end -}}
+
+  {{- /* Handle optional description */ -}}
+  {{- with .Params.description -}}
+    {{ printf ", %s" . }}
+  {{- end -}}
+</h1>
 
   {{ .Content }}
-  {{ if .Params.altname }}
+   <p>{{ .Params.gender }}</p>
+
+   {{ if .Params.altname }}
   <p><em>also known as {{ .Params.altname }}</em></p>
   {{ end }}
-  <p>{{ .Params.circa }} {{ .Params.birth }} {{ if .Params.death }} - {{ .Params.death }}{{ end }}</p>
+
+{{ with .Params.signatures }}
+  {{ if gt (len .) 1 }}
+    <h3>Signatures Used</h3>
+    <ul>
+      {{ range . }}
+        <li>{{ . }}</li>
+      {{ end }}
+    </ul>
+  {{ end }}
+{{ end }}
 
   {{ if .Params.notes }}
-  <p>Notes: {{ .Params.notes | safeHTML }}</p>
+<h3>Notes</h3>
+ <p>{{ .Params.notes | safeHTML | markdownify }}</p>
   {{ end }}
+
   {{ if .Params.biography }}
-  <p>Biography: {{ .Params.biography | safeHTML | markdownify }}</p>
+  <h3>Biographical sources</h3>
+  <p>{{ .Params.biography | safeHTML | markdownify }}</p>
   {{ end }}
 
   <h2>Articles</h2>
   <ul>
       {{ range $k, $v := .Params.articles }} 
-        {{ $slug := urls.URLize $v }}
-        {{ $pagePath := printf "/nq-proto/articles/%s/%s" $finder $slug }}
 
-        <li><a href="{{ $pagePath }}">{{ $v }}</a></li>
+        <li>{{ $v }}</li>
       {{ end }} 
   </ul>
 

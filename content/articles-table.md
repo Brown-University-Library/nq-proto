@@ -1,6 +1,6 @@
 +++
 date = '2026-06-10T15:32:38-04:00'
-draft = false
+draft = true
 title = 'Article table'
 menu = 'main'
 +++

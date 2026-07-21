@@ -1,14 +1,45 @@
-{{ partial "header.html" . }} 
+{{ define "main" }}
+  <article class="signature-page">
+    <header>
+      <h1>Signature: {{ .Title }}</h1>
+    </header>
 
-<h1>Signature: {{ .Title }}</h1>
+    {{ with .Params.people }}
+      <section class="signature-authors">
+        <h2>People who used this signature</h2>
+        <ul>
+          {{ range . }}
+            {{ $personPath := printf "/people/%s" .authorId }}
+            {{ $personPage := site.GetPage $personPath }}
 
-<ul>
-  {{ range .Params.articles }}
-    <li>
-      {{ .title }} by <a href="{{ printf "/nq-proto/people/%s" .authorId }}">{{ .standardname }}</a> 
-      — <em>{{ .date }}</em>
-    </li>
-  {{ end }}
-</ul>
+            <li>
+              <strong>
+                {{ if $personPage }}
+                  <a href="{{ $personPage.RelPermalink }}">{{ .label }}</a>
+                {{ else }}
+                  <a href="{{ $personPath | relURL }}">{{ .label }}</a>
+                {{ end }}
+              </strong>
 
-{{ partial "footer.html" . }} 
+              {{ with .citations }}
+                <ul class="citation-list">
+                  {{ range . }}
+                    <li>
+                      {{ if .title }}<em>{{ .title }}</em>{{ end }}
+                      {{ with .nq }} — {{ . }}{{ end }}
+                      {{ with .url }}
+                        (<a href="{{ . }}" target="_blank" rel="noopener">source</a>)
+                      {{ end }}
+                    </li>
+                  {{ end }}
+                </ul>
+              {{ end }}
+            </li>
+          {{ end }}
+        </ul>
+      </section>
+    {{ else }}
+      <p>No authors recorded for this signature.</p>
+    {{ end }}
+  </article>
+{{ end }}

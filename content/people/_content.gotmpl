@@ -1,4 +1,4 @@
-{{/* for now, get the json from a local file */}}
+{{/* Fetch the JSON resource */}}
 {{ $data := dict }}
 {{ $path := "joined_data.json" }}
 {{ with resources.Get $path }}
@@ -9,60 +9,88 @@
   {{ errorf "Unable to get local resource %q" $path }}
 {{ end }}
 
-{{/* Add pages and page resources. */}}
 {{ range $data }}
 
-  {{/* Add page. */}}
+  {{ $name := index . "name in standard form" }}
+  {{ $altname := index . "alternative name" }}
+  {{ $description := index . "short description" }}
+  {{ $circa := index . "± birth year" }}
+  {{ $birth := index . "birth year" }}
+  {{ $death := index . "death year" }}
+  {{ $authorId := .authorId }}
 
-    // Loop through a given person's articles to extract data
-    {{ $articles := slice }} // create an empty array
-    {{ $article := dict
-        "info" .articles
-    }}
-    {{ range $k, $v := $article }}
-    {{ range $k1, $v1 := $v }}
-    {{ range $k2, $v2 := $v1 }}
-        {{ if eq $k2 "title" }}
-        {{ $articles = $articles | append $v2 }}
-        {{ end }}
+  {{ $articles := slice }}
+  {{ $signatures := slice }}
+
+  {{ range .articles }}
+    {{ $art := . }}
+
+    {{/* Clean whitespace from Title */}}
+    {{ $cleanTitle := trim $art.title " \t\n\r" }}
+
+    {{/* Construct NQ citation string: NQ [series].[volume].[page] */}}
+    {{ $citeParts := slice }}
+    {{ with $art.series }}{{ $citeParts = $citeParts | append . }}{{ end }}
+    {{ with $art.volume }}{{ $citeParts = $citeParts | append . }}{{ end }}
+    {{ with $art.page }}{{ $citeParts = $citeParts | append . }}{{ end }}
+
+    {{ $nqCitation := "" }}
+    {{ if $citeParts }}
+      {{ $nqCitation = printf "NQ %s" (delimit $citeParts ".") }}
     {{ end }}
+
+    {{/* Clean whitespace from Signature */}}
+    {{ $cleanSig := "" }}
+    {{ with $art.signature }}
+      {{ $cleanSig = trim . " \t\n\r" }}
     {{ end }}
+
+    {{ if ne $cleanSig "" }}
+      {{ $signatures = $signatures | append $cleanSig }}
     {{ end }}
 
-    // Remapping keys with spaces to single-term variables
-    {{ $name := index . "name in standard form" }}
-    {{ $altname := index . "alternative name" }}
-    {{ $description := index . "short description" }}
-    {{ $circa := index . "± birth year" }}
-    {{ $birth := index . "birth year" }}
-    {{ $death := index . "death year" }}
+    {{/* Format Title with double quotes */}}
+    {{ $titleStr := printf "%s" $cleanTitle }}
 
+    {{/* Combine Title and "writing as Signature" */}}
+    {{ $entryMain := $titleStr }}
+    {{ if ne $cleanSig "" }}
+      {{ $entryMain = printf "%s, writing as %s" $titleStr $cleanSig }}
+    {{ end }}
 
-  // Create arrays to hold person-specific data in params
+    {{/* Attach citation with dash if citation exists */}}
+    {{ $articleEntry := $entryMain }}
+    {{ if ne $nqCitation "" }}
+      {{ $articleEntry = printf "%s — %s" $entryMain $nqCitation }}
+    {{ end }}
+
+    {{ $articles = $articles | append $articleEntry }}
+  {{ end }}
+
+  {{/* Glossary letter for people listing */}}
+  {{ $glossary := upper (substr $name 0 1) }}
+
   {{ $params := dict 
-    "date" "2023-10-15T13:18:50-07:00"
     "kind" "page"
-    "draft" "false"
+    "draft" false
     "notes" .notes
     "biography" .biography
     "gender" .gender
     "articles" $articles
+    "signatures" ($signatures | uniq)
     "altname" $altname
     "description" $description
     "circa" $circa
     "birth" $birth
     "death" $death
-    "authorId" .authorId
-    }}
-
-    {{ $content := dict 
-    "mediaType" "text/html" 
-    }}
+    "authorId" $authorId
+    "glossary" $glossary
+  }}
 
   {{ $page := dict
     "params" $params 
-    "content" $content
-    "path" .authorId
+    "content" (dict "mediaType" "text/html")
+    "path" $authorId
     "title" $name
   }}
 

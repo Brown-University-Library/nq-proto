@@ -18,3 +18,6 @@ sectionPagesMenu = 'main'
 [caches]
   [caches.images]
     dir = ':cacheDir/images'
+
+[taxonomies]
+glossary = 'glossary'
