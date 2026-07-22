@@ -45,17 +45,28 @@
       {{ $cleanSig = trim . " \t\n\r" }}
     {{ end }}
 
+    {{/* Build Signature HTML Link if signature exists */}}
+    {{ $sigLink := "" }}
     {{ if ne $cleanSig "" }}
       {{ $signatures = $signatures | append $cleanSig }}
+
+      {{/* Safe path matching /content/signatures/_content.gotmpl logic */}}
+      {{ $safePath := urlize $cleanSig }}
+      {{ if eq $safePath "" }}
+        {{ $safePath = anchorize $cleanSig }}
+      {{ end }}
+
+      {{ $sigUrl := printf "/nq-proto/pseudonyms/%s/" $safePath | relURL }}
+      {{ $sigLink = printf "<a href=%q>%s</a>" $sigUrl $cleanSig }}
     {{ end }}
 
-    {{/* Format Title with double quotes */}}
+    {{/* Format Title */}}
     {{ $titleStr := printf "%s" $cleanTitle }}
 
-    {{/* Combine Title and "writing as Signature" */}}
+    {{/* Combine Title and "writing as [Signature Link]" */}}
     {{ $entryMain := $titleStr }}
-    {{ if ne $cleanSig "" }}
-      {{ $entryMain = printf "%s, writing as %s" $titleStr $cleanSig }}
+    {{ if ne $sigLink "" }}
+      {{ $entryMain = printf "%s, writing as %s" $titleStr $sigLink }}
     {{ end }}
 
     {{/* Attach citation with dash if citation exists */}}

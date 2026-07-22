@@ -1,3 +1,35 @@
 {{ partial "header.html" . }}
 {{ .Content }}
+
+<section>
+{{/* 1. Get all the People */}}
+{{ $sectionPages := where site.RegularPages "Section" "people" }}
+
+{{/* 2. Shuffle and select 3 */}}
+{{ $randomPages := $sectionPages | shuffle | first 3 }}
+
+{{/* 3. Render the pages */}}
+<h2>Random Contributors</h2>
+<ul>
+  {{ range $randomPages }}
+    <li><a href="{{ .RelPermalink }}">{{ .Title }}</a></li>
+  {{ end }}
+</ul>
+</section>
+
+<section>
+    <h2>Random Pseudonyms</h2>
+{{/* 1. Get all the Pseudonyms */}}
+{{ $sectionPages := where site.RegularPages "Section" "pseudonyms" }}
+
+{{/* 2. Shuffle and select 3 */}}
+{{ $randomPages := $sectionPages | shuffle | first 3 }}
+
+{{/* 3. Render the pages */}}
+<ul>
+  {{ range $randomPages }}
+    <li><a href="{{ .RelPermalink }}">{{ .Title }}</a></li>
+  {{ end }}
+</ul>
+</section>
 {{ partial "footer.html" . }}

@@ -89,7 +89,7 @@
   <ul>
       {{ range $k, $v := .Params.articles }} 
 
-        <li>{{ $v }}</li>
+        <li>{{ $v |safeHTML }}</li>
       {{ end }} 
   </ul>
 
