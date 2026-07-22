@@ -21,3 +21,4 @@ sectionPagesMenu = 'main'
 
 [taxonomies]
   glossary = 'glossary'
+  gender = 'gender'

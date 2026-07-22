@@ -23,6 +23,10 @@
         {{ $params = merge $params (dict $k $v) }}
       {{ end }}
     {{ end }}
+
+    {{/* Construct and add the compact NQ citation string to .Params */}}
+    {{ $citation := printf "NQ %s.%s.%s" $article.series $article.volume $article.page }}
+    {{ $params = merge $params (dict "citation" $citation) }}
     
     {{/* Build the page path outside the map using the article's own authorId field */}}
     {{ $slug := urls.URLize $article.title }}

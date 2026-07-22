@@ -12,20 +12,18 @@
             {{ $personPath := printf "/people/%s" .authorId }}
             {{ $personPage := site.GetPage $personPath }}
 
-            <li>
-              <strong>
-                {{ if $personPage }}
-                  <a href="{{ $personPage.RelPermalink }}">{{ .label }}</a>
-                {{ else }}
-                  <a href="{{ $personPath | relURL }}">{{ .label }}</a>
-                {{ end }}
-              </strong>
+            <li>    
+              {{ if $personPage }}
+                <a href="{{ $personPage.RelPermalink }}">{{ .label }}</a>
+              {{ else }}
+                <a href="{{ $personPath | relURL }}">{{ .label }}</a>
+              {{ end }}
 
               {{ with .citations }}
                 <ul class="citation-list">
                   {{ range . }}
                     <li>
-                      {{ if .title }}<em>{{ .title }}</em>{{ end }}
+                      {{ if .title }}{{ .title }}{{ end }}
                       {{ with .nq }} — {{ . }}{{ end }}
                       {{ with .url }}
                         (<a href="{{ . }}" target="_blank" rel="noopener">source</a>)

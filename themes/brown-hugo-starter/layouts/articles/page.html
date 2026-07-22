@@ -1,9 +1,9 @@
 {{ $finder := .Params.authorId }}
 
 {{ partial "header.html" . }} 
-  <h1>{{ .Title }}</h1>
-  <p><a href="/nq-proto/people/{{.Params.authorId}}">{{.Params.standardname }}</a>, writing as {{.Params.signature }}</p>
-  <dl>
+  <h1><a href="{{ .Params.url }}" target="_blank" rel="noopener">{{ .Title }}</a>, {{ .Params.citation }}, {{ .Params.date }}</h1>
+  <p><a href="/nq-proto/people/{{.Params.authorId}}">{{.Params.standardname }}</a>, writing as <a href="/nq-proto/pseudonyms/{{.Params.signature | urlize}}">{{.Params.signature }}</a></p>
+<!--  <dl>
 {{ range $k, $v := .Params }}
   {{ if $v }}
     {{ if eq $k "authorid" }}
@@ -19,5 +19,6 @@
   {{ end }}
 {{ end }}
   </dl>
+-->
 
 {{ partial "footer.html" . }} 

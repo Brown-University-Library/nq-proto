@@ -35,12 +35,18 @@
   {{- end -}}
 </h1>
 
-  {{ .Content }}
-   <p>{{ .Params.gender }}</p>
-
    {{ if .Params.altname }}
   <p><em>also known as {{ .Params.altname }}</em></p>
-  {{ end }}
+  {{ end }}   
+  
+  {{ with .GetTerms "gender" }}
+   <h3>Gender</h3>
+    {{ range . }}
+      <p><a href="{{ .RelPermalink }}">{{ .LinkTitle }}</a></p>
+    {{ end }}
+    {{ end }}
+
+
 
 {{ with .Params.signatures }}
   {{ if gt (len .) 1 }}
