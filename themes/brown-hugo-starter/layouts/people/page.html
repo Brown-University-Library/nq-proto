@@ -46,18 +46,34 @@
     {{ end }}
     {{ end }}
 
+  {{ with .Params.signatures }}
+    {{ if gt (len .) 1 }}
+      <h3>Signatures Used</h3>
+      <ul>
+        {{ range . }}
+          {{ $cleanSig := trim . " \t\n\r" }}
+          
+          {{/* Generate safe path slug matching /content/pseudonyms/_content.gotmpl */}}
+          {{ $safePath := urlize $cleanSig }}
+          {{ if eq $safePath "" }}
+            {{ $safePath = anchorize $cleanSig }}
+          {{ end }}
 
+          {{/* Query Hugo for the dynamic signature page */}}
+          {{ $sigPath := printf "/pseudonyms/%s" $safePath }}
+          {{ $sigPage := site.GetPage $sigPath }}
 
-{{ with .Params.signatures }}
-  {{ if gt (len .) 1 }}
-    <h3>Signatures Used</h3>
-    <ul>
-      {{ range . }}
-        <li>{{ . }}</li>
-      {{ end }}
-    </ul>
+          <li>
+            {{ if $sigPage }}
+              <a href="{{ $sigPage.RelPermalink }}">{{ $cleanSig }}</a>
+            {{ else }}
+              <a href="{{ $sigPath | relURL }}">{{ $cleanSig }}</a>
+            {{ end }}
+          </li>
+        {{ end }}
+      </ul>
+    {{ end }}
   {{ end }}
-{{ end }}
 
   {{ if .Params.notes }}
 <h3>Notes</h3>
