@@ -71,8 +71,6 @@
   {{ $glossary := upper (substr $name 0 1) }}
 
   {{ $params := dict 
-    "kind" "page"
-    "draft" false
     "notes" .notes
     "biography" .biography
     "gender" .gender
@@ -92,6 +90,8 @@
     "content" (dict "mediaType" "text/html")
     "path" $authorId
     "title" $name
+    "kind" "page"
+    "draft" false
   }}
 
   {{ $.AddPage $page }}

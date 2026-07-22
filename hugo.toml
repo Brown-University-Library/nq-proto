@@ -20,6 +20,4 @@ sectionPagesMenu = 'main'
     dir = ':cacheDir/images'
 
 [taxonomies]
-glossary = 'glossary'
-
-disableKinds = ['taxonomy']
+  glossary = 'glossary'

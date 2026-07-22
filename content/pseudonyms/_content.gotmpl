@@ -107,8 +107,6 @@
 
   {{/* Build front matter params for the generated page */}}
   {{ $params := dict 
-    "kind" "page"
-    "draft" "false"
     "people" $people
     "glossary" $glossary
   }}
@@ -119,7 +117,8 @@
     "content" (dict "mediaType" "text/html")
     "path" $safePath
     "title" $sig
-
+    "kind" "page"
+    "draft" "false"
   }}
 
   {{/* Register the page into Hugo's site tree */}}

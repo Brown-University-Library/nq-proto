@@ -1,4 +1,4 @@
-{{ define "main" }}
+  {{ partial "header.html" . }} 
   <article class="signature-page">
     <header>
       <h1>Signature: {{ .Title }}</h1>
@@ -42,4 +42,4 @@
       <p>No authors recorded for this signature.</p>
     {{ end }}
   </article>
-{{ end }}
+{{ partial "footer.html" . }} 
