@@ -3,6 +3,7 @@
 {{ partial "header.html" . }} 
 <h1>
   {{- .Title -}}
+</h1>
 
   {{/* Build the lifespan string inside parentheses if either birth or death exists */}}
   {{- if or .Params.birth .Params.death -}}
@@ -26,25 +27,24 @@
     {{- end -}}
 
     {{/* Format lifespan as (birth–death) or (birth) */}}
-    {{ printf " (%s)" (delimit $lifespan "–") }}
+    <p>{{ printf " (%s)" (delimit $lifespan "–") }}</p>
   {{- end -}}
-
-  {{- /* Handle optional description */ -}}
-  {{- with .Params.description -}}
-    {{ printf ", %s" . }}
-  {{- end -}}
-</h1>
 
    {{ if .Params.altname }}
   <p><em>also known as {{ .Params.altname }}</em></p>
-  {{ end }}   
+  {{ end }} 
+  
+    {{- /* Handle optional description */ -}}
+  {{- with .Params.description -}}
+    <p>{{ printf "%s" . }}</p>
+  {{- end -}}
   
   {{ with .GetTerms "gender" }}
    <h3>Gender</h3>
     {{ range . }}
       <p><a href="{{ .RelPermalink }}">{{ .LinkTitle }}</a></p>
     {{ end }}
-    {{ end }}
+  {{ end }}
 
   {{ with .Params.signatures }}
     {{ if gt (len .) 1 }}

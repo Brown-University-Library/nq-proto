@@ -1,6 +1,22 @@
 {{ partial "header.html" . }}
 <h1>{{ .Title }}</h1>
 
+<nav>
+  <form id="pseud-search" class="search" role="search">
+    <label for="search-input">Search Pseudonyms</label>
+    <input type="search" id="search-input" class="search-input" placeholder="e.g. Alpha">
+    <button type="submit">Search</button>
+    <button type="reset">Clear search</button>
+  </form>
+
+</nav>
+
+<section id="search-results">
+<template id="search-result" hidden>
+    <h3 class="pseud-result"><a href=""></a></h3>
+</template>
+</section>
+
 {{ $groupedPages := .Pages.GroupByParam "glossary" }}
 
 {{ if $groupedPages }}

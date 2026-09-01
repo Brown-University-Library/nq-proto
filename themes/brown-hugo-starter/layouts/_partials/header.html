@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-    <title>{{ if not .IsHome }}{{ .Title }} | {{ end }}{{ .Site.Title }}</title>
+    <title>{{ if not .IsHome }}{{ .Title }} | {{ end }}{{ .Site.Title | markdownify }}</title>
 
     {{ $style := resources.Get "css/style.css" | resources.Minify | resources.Fingerprint }}
     <link rel="stylesheet" href="{{ $style.Permalink }}">
@@ -18,8 +18,17 @@
       href="https://fonts.googleapis.com/css?family=Roboto:300,400,500"
     />
     <script src="https://unpkg.com/mirador@latest/dist/mirador.min.js"></script>
-    {{ end }} {{ template "_internal/google_analytics.html" . }}
+    {{ end }} 
 
+    <!-- on list pages only, for lunr search -->
+    {{ if and (not .IsPage) (in (slice "people" "pseudonyms" "articles") .Type) }}
+      <script src="https://unpkg.com/lunr/lunr.js"></script>
+      {{ with resources.Get "js/lunr.js" }}
+        <script src="{{ .RelPermalink }}"></script>
+      {{ end }}
+    {{ end }}
+
+    {{ if eq .CurrentSection "map" }}
     <link
       rel="stylesheet"
       href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
@@ -40,6 +49,8 @@
       type="text/javascript"
       src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"
     ></script>
+
+    {{ end }}
     <script
       type="text/javascript"
       src="https://unpkg.com/papaparse@latest/papaparse.min.js"

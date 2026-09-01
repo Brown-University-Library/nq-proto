@@ -1,0 +1,27 @@
+{{- $searchIndex := slice -}}
+{{- $currentSection := .Section -}}
+
+{{/* Loop through regular child pages in the current section, excluding section index pages */}}
+{{- range where .Pages "IsPage" true -}}
+  {{- if eq $currentSection "people" -}}
+    {{- $item := dict 
+      "url" .Permalink 
+      "name" .Title 
+      "altname" (default "" .Params.altname)
+      "description" (default "" .Params.description)
+      "notes" (default "" .Params.notes)
+      "biography" (default "" .Params.biography)
+    -}}
+    {{- $searchIndex = $searchIndex | append $item -}}
+
+  {{- else if or (eq $currentSection "pseudonyms") (eq $currentSection "articles") -}}
+    {{- $item := dict 
+      "url" .Permalink 
+      "name" .Title 
+    -}}
+    {{- $searchIndex = $searchIndex | append $item -}}
+  {{- end -}}
+{{- end -}}
+
+{{/* Output formatted, valid JSON */}}
+{{- $searchIndex | jsonify (dict "indent" "  ") -}}

@@ -1,8 +1,10 @@
 </main>
 	
 <footer>
-	<p>&copy;{{ dateFormat "2006" now }} {{ .Site.Title }}</p>
+    <ul><li><a href="https://www.brown.edu/website-accessibility">Accessibility</a></li></ul>
+	<p>{{ .Site.Copyright | markdownify }}</p>
 </footer>
+    {{ template "_internal/google_analytics.html" . }}
 
 </body>
 </html>

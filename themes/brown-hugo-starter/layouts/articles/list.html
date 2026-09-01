@@ -1,0 +1,25 @@
+{{ partial "header.html" . }}
+<h1>{{ .Title }}</h1>
+
+<nav>
+  <form id="article-search" class="search" role="search">
+    <label for="search-input">Search Articles</label>
+    <input type="search" id="search-input" class="search-input" placeholder="e.g. king, oxford, cornwall">
+    <button type="submit">Search</button>
+    <button type="reset">Clear search</button>
+  </form>
+
+</nav>
+
+<section id="search-results">
+<template id="search-result" hidden>
+    <h3 class="article-result"><a href=""></a></h3>
+</template>
+</section>
+
+<ul class="list">
+{{ range .Pages }}
+    <li><a href="{{ .RelPermalink }}">{{ .LinkTitle }}</a></li>
+  {{ end }}
+</ul>
+{{ partial "footer.html" . }}

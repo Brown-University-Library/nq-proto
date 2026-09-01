@@ -73,6 +73,12 @@ ul.list {
     columns: 3;
     column-gap: 2rem;
     padding-left: 0;
+    list-style-type: none;
+    li {
+        border-bottom: solid 1px var(--ink);
+        padding: 1rem 0.5rem;
+        break-inside: avoid;
+    }
 }
 
 .post-snippet {

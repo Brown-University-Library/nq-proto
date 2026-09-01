@@ -1,6 +1,29 @@
 {{ partial "header.html" . }}
 <h1>{{ .Title }}</h1>
 
+<nav>
+  <form id="people-search" class="search" role="search">
+    <div class="search-field">
+      <label for="search-name">Search Name</label>
+      <input type="search" id="search-name" class="search-input" placeholder="e.g. Emilia Francis Dilke">
+    </div>
+
+    <div class="search-field">
+      <label for="search-details">Keywords</label>
+      <input type="search" id="search-details" class="search-input" placeholder="e.g. writer, lawyer, clergy">
+    </div>
+
+    <button type="submit">Search</button>
+    <button type="reset">Clear search</button>
+  </form>
+</nav>
+
+<section id="search-results">
+  <template id="search-result" hidden>
+    <h3 class="people-result"><a href=""></a></h3>
+  </template>
+</section>
+
 {{ $groupedPages := .Pages.GroupByParam "glossary" }}
 
 {{ if $groupedPages }}
@@ -39,7 +62,31 @@
       <ul class="list">
         {{ range .Pages }}
           <li>
-            <a href="{{ .RelPermalink }}">{{ .Title }}</a>
+            <a href="{{ .RelPermalink }}">{{ .Title }}</a><br>
+            {{/* Build the lifespan string inside parentheses if either birth or death exists */}}
+            {{- if or .Params.birth .Params.death -}}
+              {{- $lifespan := slice -}}
+              
+              {{/* Handle birth year with optional circa */}}
+              {{- if .Params.birth -}}
+                {{- $b := .Params.birth -}}
+                {{- if .Params.circa -}}
+                  {{- $b = printf "%s %s" .Params.circa .Params.birth -}}
+                {{- end -}}
+                {{- $lifespan = $lifespan | append $b -}}
+              {{- else -}}
+                {{/* If no birth year but death year exists, mark as unknown birth */}}
+                {{- $lifespan = $lifespan | append "?" -}}
+              {{- end -}}
+
+              {{/* Handle death year */}}
+              {{- if .Params.death -}}
+                {{- $lifespan = $lifespan | append .Params.death -}}
+              {{- end -}}
+
+              {{/* Format lifespan as (birth–death) or (birth) */}}
+              {{ printf " (%s)" (delimit $lifespan "–") }}
+            {{- end -}}
           </li>
         {{ end }}
       </ul>
