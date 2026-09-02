@@ -1,7 +1,6 @@
 {{- $searchIndex := slice -}}
 {{- $currentSection := .Section -}}
 
-{{/* Loop through regular child pages in the current section, excluding section index pages */}}
 {{- range where .Pages "IsPage" true -}}
   {{- if eq $currentSection "people" -}}
     {{- $item := dict 
@@ -9,8 +8,8 @@
       "name" .Title 
       "altname" (default "" .Params.altname)
       "description" (default "" .Params.description)
-      "notes" (default "" .Params.notes)
-      "biography" (default "" .Params.biography)
+      "birth" (cond (ne .Params.birth nil) (int .Params.birth) "")
+      "death" (cond (ne .Params.death nil) (int .Params.death) "")
     -}}
     {{- $searchIndex = $searchIndex | append $item -}}
 
@@ -23,5 +22,4 @@
   {{- end -}}
 {{- end -}}
 
-{{/* Output formatted, valid JSON */}}
 {{- $searchIndex | jsonify (dict "indent" "  ") -}}

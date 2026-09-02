@@ -7,14 +7,61 @@
       <label for="search-name">Search Name</label>
       <input type="search" id="search-name" class="search-input" placeholder="e.g. Emilia Francis Dilke">
     </div>
-
+    
     <div class="search-field">
       <label for="search-details">Keywords</label>
       <input type="search" id="search-details" class="search-input" placeholder="e.g. writer, lawyer, clergy">
     </div>
 
-    <button type="submit">Search</button>
-    <button type="reset">Clear search</button>
+    <div class="gender-facet search-field">
+      <ul>
+        <li><a href="../gender/f">Women</a></li>
+        <li><a href="../gender/m">Men</a></li>
+      </ul>
+    </div>
+
+    <!-- Date Range Sliders -->
+    <div class="search-field date-range">
+      <fieldset>
+        <legend>Lifespan / Date Ranges</legend>
+
+        <!-- Birth Multi-Range Slider -->
+        <div class="slider-block">
+          <div class="slider-header">
+            <span>Birth Range:</span>
+            <span class="range-display">
+              <output id="out-birth-after">1750</output> – <output id="out-birth-before">1950</output>
+            </span>
+          </div>
+          <div class="multi-range-container">
+            <input type="range" id="birth-after" class="range-min" min="1750" max="1950" value="1750" step="1">
+            <input type="range" id="birth-before" class="range-max" min="1750" max="1950" value="1950" step="1">
+            <div class="slider-track"></div>
+          </div>
+        </div>
+
+        <!-- Death Multi-Range Slider -->
+        <div class="slider-block">
+          <div class="slider-header">
+            <span>Death Range:</span>
+            <span class="range-display">
+              <output id="out-death-after">1750</output> – <output id="out-death-before">2000</output>
+            </span>
+          </div>
+          <div class="multi-range-container">
+            <input type="range" id="death-after" class="range-min" min="1750" max="2000" value="1750" step="1">
+            <input type="range" id="death-before" class="range-max" min="1750" max="2000" value="2000" step="1">
+            <div class="slider-track"></div>
+          </div>
+        </div>
+
+      </fieldset>
+    </div>
+    
+    <div class="form-mgmt">
+      <button type="submit">Search</button>
+      <button type="reset">Clear search</button>
+    </div>
   </form>
 </nav>
 
