@@ -65,7 +65,11 @@
     ></script>
   </head>
 
-  <body>
-    {{ partial "nav.html" . }}
+  <body 
+    class="
+      {{ if and (not .IsPage) (in (slice "people" "pseudonyms" "articles") .Type) }}has-filters {{ end }}
+      {{ if and (.IsPage) (in (slice "people" "pseudonyms" "articles") .Type) }}db {{ end }}
+    ">
+    {{ partial "head.html" . }}
 
     <main class="content">

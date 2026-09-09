@@ -27,17 +27,22 @@
     {{- end -}}
 
     {{/* Format lifespan as (birth–death) or (birth) */}}
-    <p>{{ printf " (%s)" (delimit $lifespan "–") }}</p>
+    <p class="lifespan">{{ printf " (%s)" (delimit $lifespan "–") }}</p>
   {{- end -}}
 
    {{ if .Params.altname }}
-  <p><em>also known as {{ .Params.altname }}</em></p>
+  <p class="altname">also known as {{ .Params.altname }}</p>
   {{ end }} 
   
     {{- /* Handle optional description */ -}}
   {{- with .Params.description -}}
     <p>{{ printf "%s" . }}</p>
   {{- end -}}
+  
+  {{ if .Params.biography }}
+  <h3>Biographical information</h3>
+  <p>{{ .Params.biography | safeHTML | markdownify }}</p>
+  {{ end }}
   
   {{ with .GetTerms "gender" }}
    <h3>Gender</h3>
@@ -49,7 +54,7 @@
   {{ with .Params.signatures }}
     {{ if gt (len .) 1 }}
       <h3>Signatures Used</h3>
-      <ul>
+      <ul class="three-col fancy">
         {{ range . }}
           {{ $cleanSig := trim . " \t\n\r" }}
           
@@ -80,17 +85,44 @@
  <p>{{ .Params.notes | safeHTML | markdownify }}</p>
   {{ end }}
 
-  {{ if .Params.biography }}
-  <h3>Biographical sources</h3>
-  <p>{{ .Params.biography | safeHTML | markdownify }}</p>
+  {{ with .Params.articlesByPseudonym }}
+    <h2>Articles</h2>
+    {{ range . }}
+      
+      {{ $displaySig := .displaysignature }}
+      {{ $safePath := urlize $displaySig }}
+      {{ if eq $safePath "" }}
+        {{ $safePath = anchorize $displaySig }}
+      {{ end }}
+      
+      {{ $sigPath := printf "/pseudonyms/%s" $safePath }}
+      {{ $sigPage := site.GetPage $sigPath }}
+
+      {{/* Render the dynamic link using the exact preserved display capitalization */}}
+      {{ $linkedPseudonym := "" }}
+      {{ if $sigPage }}
+        {{ $linkedPseudonym = printf "<a href=%q>%s</a>" $sigPage.RelPermalink $displaySig }}
+      {{ else }}
+        {{ $linkedPseudonym = printf "<a href=%q>%s</a>" ($sigPath | relURL) $displaySig }}
+      {{ end }}
+
+      <h3>Writing as {{ $linkedPseudonym | safeHTML }}</h3>
+      <ul class="two-col citation-list">
+        {{ range .articles }}
+          <li>
+            <p>{{ .title }}</p>
+            <p>
+              {{ .citation }}
+              {{- if and .citation .url }}, {{ end -}}
+              {{- with .url -}}
+                <a href="{{ . }}" target="_blank" rel="noopener">Source</a>
+              {{- end -}}
+            </p>
+          </li>
+        {{ end }}
+      </ul>
+
+    {{ end }}
   {{ end }}
 
-  <h2>Articles</h2>
-  <ul>
-      {{ range $k, $v := .Params.articles }} 
-
-        <li>{{ $v |safeHTML }}</li>
-      {{ end }} 
-  </ul>
-
-{{ partial "footer.html" . }} 
+{{ partial "footer.html" . }}

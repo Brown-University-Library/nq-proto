@@ -19,8 +19,8 @@
   {{ $death := index . "death year" }}
   {{ $authorId := .authorId }}
 
-  {{ $articles := slice }}
   {{ $signatures := slice }}
+  {{ $articlesByPseudonym := dict }}
 
   {{ range .articles }}
     {{ $art := . }}
@@ -39,43 +39,35 @@
       {{ $nqCitation = printf "NQ %s" (delimit $citeParts ".") }}
     {{ end }}
 
-    {{/* Clean whitespace from Signature */}}
-    {{ $cleanSig := "" }}
-    {{ with $art.signature }}
-      {{ $cleanSig = trim . " \t\n\r" }}
+    {{/* Clean whitespace from Signature while preserving original casing */}}
+    {{ $cleanSig := trim $art.signature " \t\n\r" }}
+    {{ $signatures = $signatures | append $cleanSig }}
+
+    {{/* Map key (normalized for lookup) */}}
+    {{ $groupKey := lower $cleanSig }}
+
+    {{/* Create structured article object */}}
+    {{ $articleObj := dict
+      "title" $cleanTitle
+      "citation" $nqCitation
+      "url" $art.url
+    }}
+
+    {{/* Group articles under their pseudonym key while explicitly tracking original display signature */}}
+    {{ $existingGroup := index $articlesByPseudonym $groupKey }}
+    {{ $articlesList := slice }}
+    {{ if $existingGroup }}
+      {{ $articlesList = index $existingGroup "articles" }}
     {{ end }}
 
-    {{/* Build Signature HTML Link if signature exists */}}
-    {{ $sigLink := "" }}
-    {{ if ne $cleanSig "" }}
-      {{ $signatures = $signatures | append $cleanSig }}
+    {{ $articlesList = $articlesList | append $articleObj }}
 
-      {{/* Safe path matching /content/signatures/_content.gotmpl logic */}}
-      {{ $safePath := urlize $cleanSig }}
-      {{ if eq $safePath "" }}
-        {{ $safePath = anchorize $cleanSig }}
-      {{ end }}
+    {{ $groupData := dict
+      "displaySignature" $cleanSig
+      "articles" $articlesList
+    }}
 
-      {{ $sigUrl := printf "/nq-proto/pseudonyms/%s/" $safePath | relURL }}
-      {{ $sigLink = printf "<a href=%q>%s</a>" $sigUrl $cleanSig }}
-    {{ end }}
-
-    {{/* Format Title */}}
-    {{ $titleStr := printf "%s" $cleanTitle }}
-
-    {{/* Combine Title and "writing as [Signature Link]" */}}
-    {{ $entryMain := $titleStr }}
-    {{ if ne $sigLink "" }}
-      {{ $entryMain = printf "%s, writing as %s" $titleStr $sigLink }}
-    {{ end }}
-
-    {{/* Attach citation with dash if citation exists */}}
-    {{ $articleEntry := $entryMain }}
-    {{ if ne $nqCitation "" }}
-      {{ $articleEntry = printf "%s — %s" $entryMain $nqCitation }}
-    {{ end }}
-
-    {{ $articles = $articles | append $articleEntry }}
+    {{ $articlesByPseudonym = merge $articlesByPseudonym (dict $groupKey $groupData) }}
   {{ end }}
 
   {{/* Glossary letter for people listing */}}
@@ -85,7 +77,7 @@
     "notes" .notes
     "biography" .biography
     "gender" .gender
-    "articles" $articles
+    "articlesByPseudonym" $articlesByPseudonym
     "signatures" ($signatures | uniq)
     "altname" $altname
     "description" $description

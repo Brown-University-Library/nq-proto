@@ -1,7 +1,7 @@
 {{ partial "header.html" . }}
 <h1>{{ .Title }}</h1>
 
-<nav>
+<nav class="filters">
   <form id="article-search" class="search" role="search">
     <div class="search-field">
       <label for="search-input">Search Articles</label>
@@ -20,9 +20,11 @@
 </template>
 </section>
 
-<ul class="list">
-{{ range .Pages }}
-    <li><a href="{{ .RelPermalink }}">{{ .LinkTitle }}</a></li>
-  {{ end }}
-</ul>
+<div class="listing">
+  <ul class="three-col fancy">
+  {{ range .Pages }}
+      <li><a href="{{ .RelPermalink }}">{{ .LinkTitle }}</a></li>
+    {{ end }}
+  </ul>
+</div>
 {{ partial "footer.html" . }}

@@ -1,7 +1,7 @@
 {{ partial "header.html" . }}
 <h1>{{ .Title }}</h1>
 
-<nav>
+<nav class="filters">
   <form id="pseud-search" class="search" role="search">
     <div class="search-field">
       <label for="search-input">Search Pseudonyms</label>
@@ -45,6 +45,7 @@
 
   {{/* Grouped Content Sections */}}
   {{ range $groupedPages }}
+  <div class="listing">
     {{ $sectionId := cond (ne .Key "") (printf "letter-%s" .Key) "letter-other" }}
 
     <section id="{{ $sectionId }}">
@@ -56,7 +57,7 @@
         {{ end }}
       </h2>
 
-      <ul class="list">
+      <ul class="three-col fancy">
         {{ range .Pages }}
           <li>
             <a href="{{ .RelPermalink }}">{{ .Title }}</a>
@@ -65,6 +66,7 @@
       </ul>
     </section>
   {{ end }}
+  </div>
 {{ end }}
 
 {{ partial "footer.html" . }}

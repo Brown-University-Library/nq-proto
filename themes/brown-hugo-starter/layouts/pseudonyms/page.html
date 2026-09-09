@@ -8,34 +8,38 @@
     {{ with .Params.people }}
       <section class="signature-authors">
         <h2>People who used this signature</h2>
-        <ul>
+        <div class="">
           {{ range . }}
             {{ $personPath := printf "/people/%s" .authorId }}
             {{ $personPage := site.GetPage $personPath }}
 
-            <li>    
+            <h3>    
               {{ if $personPage }}
                 <a href="{{ $personPage.RelPermalink }}">{{ .label }}</a>
               {{ else }}
                 <a href="{{ $personPath | relURL }}">{{ .label }}</a>
               {{ end }}
+              </h3>
 
               {{ with .citations }}
-                <ul class="citation-list">
+                <ul class="two-col citation-list">
                   {{ range . }}
                     <li>
-                      {{ if .title }}{{ .title }}{{ end }}
-                      {{ with .nq }} — {{ . }}{{ end }}
+                      {{ if .title }}<p>{{ .title }}</p>{{ end }}
+                      {{ with .nq }}<p class="citation">{{ . }}{{ end }}
                       {{ with .url }}
-                        (<a href="{{ . }}" target="_blank" rel="noopener">source</a>)
+                        (<a href="{{ . }}" target="_blank" rel="noopener">source</a>)</p>
+                        {{ else }}
+                      </p>
                       {{ end }}
+                      
                     </li>
                   {{ end }}
-                </ul>
+                  </ul>
               {{ end }}
             </li>
           {{ end }}
-        </ul>
+          </div>
       </section>
     {{ else }}
       <p>No authors recorded for this signature.</p>

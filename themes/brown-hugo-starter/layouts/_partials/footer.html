@@ -1,7 +1,11 @@
 </main>
 	
 <footer>
-    <ul><li><a href="https://www.brown.edu/website-accessibility">Accessibility</a></li></ul>
+    <nav class="site-nav">{{ partial "nav.html" . }}</nav>
+
+        <ul>
+        <li><a href="https://www.brown.edu/website-accessibility">Accessibility</a></li>
+        </ul>
 	<p>{{ .Site.Copyright | markdownify }}</p>
 </footer>
     {{ template "_internal/google_analytics.html" . }}
