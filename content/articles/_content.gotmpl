@@ -24,18 +24,27 @@
       {{ end }}
     {{ end }}
 
+    {{/* Check for a title; substitute "[Untitled]" if missing or blank */}}
+    {{ $title := "[Untitled]" }}
+    {{ with $article.title }}
+      {{ $trimmed := trim . " \t\n\r" }}
+      {{ if ne $trimmed "" }}
+        {{ $title = $trimmed }}
+      {{ end }}
+    {{ end }}
+
     {{/* Construct and add the compact NQ citation string to .Params */}}
     {{ $citation := printf "NQ %s.%s.%s" $article.series $article.volume $article.page }}
     {{ $params = merge $params (dict "citation" $citation) }}
     
     {{/* Build the page path outside the map using the article's own authorId field */}}
-    {{ $slug := urls.URLize $article.title }}
+    {{ $slug := urls.URLize $title }}
     {{ $pagePath := printf "%s/%s" $article.authorId $slug }}
     
     {{/* Package page data and send to Hugo to build */}}
     {{ $page := dict 
       "kind" "page"
-      "title" $article.title
+      "title" $title
       "path" $pagePath
       "params" $params
     }}

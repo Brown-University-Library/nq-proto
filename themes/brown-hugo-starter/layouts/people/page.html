@@ -111,7 +111,7 @@
         {{ range .articles }}
           <li>
             <p>{{ .title }}</p>
-            <p>
+            <p class="citation">
               {{ .citation }}
               {{- if and .citation .url }}, {{ end -}}
               {{- with .url -}}
