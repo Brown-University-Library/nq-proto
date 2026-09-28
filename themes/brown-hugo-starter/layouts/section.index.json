@@ -10,6 +10,8 @@
       "description" (default "" .Params.description)
       "birth" (cond (ne .Params.birth nil) (int .Params.birth) "")
       "death" (cond (ne .Params.death nil) (int .Params.death) "")
+      "locations" (default "" .Params.locations)
+      "gender" (default "" .Params.gender)
     -}}
     {{- $searchIndex = $searchIndex | append $item -}}
 

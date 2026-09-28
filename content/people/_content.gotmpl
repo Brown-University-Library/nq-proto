@@ -22,8 +22,56 @@
   {{ $signatures := slice }}
   {{ $articlesByPseudonym := dict }}
 
+  {{/* Slices to aggregate geographic metadata for the person */}}
+  {{ $habitats := slice }}
+  {{ $towns := slice }}
+  {{ $counties := slice }}
+  {{ $countries := slice }}
+  {{ $locations := slice }}
+
   {{ range .articles }}
     {{ $art := . }}
+
+    {{/* Collect non-empty geographic fields */}}
+    {{ $locParts := slice }}
+
+    {{ with $art.habitat }}
+      {{ $trimmed := trim . " \t\n\r" }}
+      {{ if ne $trimmed "" }}
+        {{ $habitats = $habitats | append $trimmed }}
+        {{ $locParts = $locParts | append $trimmed }}
+      {{ end }}
+    {{ end }}
+
+    {{ with $art.town }}
+      {{ $trimmed := trim . " \t\n\r" }}
+      {{ if ne $trimmed "" }}
+        {{ $towns = $towns | append $trimmed }}
+        {{ $locParts = $locParts | append $trimmed }}
+      {{ end }}
+    {{ end }}
+
+    {{ with $art.county }}
+      {{ $trimmed := trim . " \t\n\r" }}
+      {{ if ne $trimmed "" }}
+        {{ $counties = $counties | append $trimmed }}
+        {{ $locParts = $locParts | append $trimmed }}
+      {{ end }}
+    {{ end }}
+
+    {{ with $art.country }}
+      {{ $trimmed := trim . " \t\n\r" }}
+      {{ if ne $trimmed "" }}
+        {{ $countries = $countries | append $trimmed }}
+        {{ $locParts = $locParts | append $trimmed }}
+      {{ end }}
+    {{ end }}
+
+    {{/* Build formatted "habitat, town, county, country" location string */}}
+    {{ if $locParts }}
+      {{ $locationStr := delimit $locParts ", " }}
+      {{ $locations = $locations | append $locationStr }}
+    {{ end }}
 
     {{/* Clean whitespace from Title */}}
     {{ $cleanTitle := trim $art.title " \t\n\r" }}
@@ -51,6 +99,10 @@
       "title" $cleanTitle
       "citation" $nqCitation
       "url" $art.url
+      "habitat" $art.habitat
+      "town" $art.town
+      "county" $art.county
+      "country" $art.country
     }}
 
     {{/* Group articles under their pseudonym key while explicitly tracking original display signature */}}
@@ -79,6 +131,11 @@
     "gender" .gender
     "articlesByPseudonym" $articlesByPseudonym
     "signatures" ($signatures | uniq)
+    "habitats" ($habitats | uniq)
+    "towns" ($towns | uniq)
+    "counties" ($counties | uniq)
+    "countries" ($countries | uniq)
+    "locations" ($locations | uniq)
     "altname" $altname
     "description" $description
     "circa" $circa

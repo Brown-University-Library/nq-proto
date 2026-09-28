@@ -3,26 +3,42 @@
 
 <nav class="filters">
   <form id="people-search" class="search" role="search">
-    <div class="search-field">
-      <label for="search-name">Search Name</label>
-      <input type="search" id="search-name" class="search-input" placeholder="e.g. Emilia Francis Dilke">
-    </div>
-    
-    <div class="search-field">
-      <label for="search-details">Keywords</label>
-      <input type="search" id="search-details" class="search-input" placeholder="e.g. writer, lawyer, clergy">
+    <div class="scoop">
+      <div class="search-field">
+        <label for="search-name">Search Name</label>
+        <input type="search" id="search-name" class="search-input" placeholder="e.g. Emilia Francis Dilke">
+      </div>
+      
+      <div class="search-field">
+        <label for="search-details">Keywords</label>
+        <input type="search" id="search-details" class="search-input" placeholder="e.g. writer, lawyer, clergy">
+      </div>
+
+      <div class="search-field">
+        <label for="search-locations">Habitat</label>
+        <input type="search" id="search-locations" class="search-input" placeholder="e.g., Swarraton Rectory, Alresford, Winchester, Hampshire, England"></div>
     </div>
 
     <div class="gender-facet search-field">
-      <ul>
-        <li><a href="../gender/f">Women</a></li>
-        <li><a href="../gender/m">Men</a></li>
-      </ul>
+      <fieldset>
+        <legend>Gender</legend>
+      <label for="gender-female">
+      <input type="checkbox" id="gender-female" name="gender" class="gender-checkbox" value="F">
+      Female
+    </label>
+    <label for="gender-male">
+      <input type="checkbox" id="gender-male" name="gender" class="gender-checkbox" value="M">
+      Male
+    </label>
+    <label for="gender-unknown">
+      <input type="checkbox" id="gender-unknown" name="gender" class="gender-checkbox" value="unknown">
+      Unknown
+    </label>      </fieldset>
     </div>
 
     <!-- Date Range Sliders -->
     <div class="search-field date-range">
-      <fieldset>
+      <fieldset class="scoop">
         <legend>Lifespan / Date Ranges</legend>
 
         <!-- Birth Multi-Range Slider -->
@@ -59,17 +75,13 @@
     </div>
     
     <div class="form-mgmt">
-      <button type="submit">Search</button>
+      <button type="submit" class="lozenge">Search</button>
       <button type="reset">Clear search</button>
     </div>
   </form>
 </nav>
 
-<section id="search-results">
-  <template id="search-result" hidden>
-    <h3 class="people-result"><a href=""></a></h3>
-  </template>
-</section>
+<h2 id="search-results">{{ len $.RegularPages }} contributors</h2>
 
 {{ $groupedPages := .Pages.GroupByParam "glossary" }}
 
@@ -105,9 +117,9 @@
         {{ end }}
       </h2>
 
-      <ul class="three-col fancy">
+      <ul class="two-col fancy">
         {{ range .Pages }}
-          <li>
+          <li data-url="{{ .RelPermalink }}" data-birth="{{ default "" .Params.birth }}" data-death="{{ default "" .Params.death }}">
             <a href="{{ .RelPermalink }}">{{ .Title }}</a><br>
             {{/* Build the lifespan string inside parentheses if either birth or death exists */}}
             {{- if or .Params.birth .Params.death -}}

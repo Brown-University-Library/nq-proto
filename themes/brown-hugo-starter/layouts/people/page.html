@@ -1,6 +1,8 @@
 {{ $finder := .Params.authorId }}
 
 {{ partial "header.html" . }} 
+
+<div class="card">
 <h1>
   {{- .Title -}}
 </h1>
@@ -38,6 +40,8 @@
   {{- with .Params.description -}}
     <p>{{ printf "%s" . }}</p>
   {{- end -}}
+
+</div>
   
   {{ if .Params.biography }}
   <h3>Biographical information</h3>

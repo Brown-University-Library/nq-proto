@@ -3,12 +3,12 @@
 
 <nav class="filters">
   <form id="pseud-search" class="search" role="search">
-    <div class="search-field">
+    <div class="search-field scoop">
       <label for="search-input">Search Pseudonyms</label>
       <input type="search" id="search-input" class="search-input" placeholder="e.g. Alpha">
     </div>
     <div class="form-mgmt">
-      <button type="submit">Search</button>
+      <button type="submit" class="lozenge">Search</button>
       <button type="reset">Clear search</button>
     </div>
   </form>
@@ -46,6 +46,7 @@
   {{/* Grouped Content Sections */}}
   {{ range $groupedPages }}
   <div class="listing">
+
     {{ $sectionId := cond (ne .Key "") (printf "letter-%s" .Key) "letter-other" }}
 
     <section id="{{ $sectionId }}">

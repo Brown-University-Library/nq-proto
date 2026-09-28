@@ -1,12 +1,27 @@
 </main>
+{{ if and (.IsPage) (in (slice "people" "pseudonyms" "articles") .Type) }}
+    {{ with .Parent }}
+        <nav class="breadcrumb">
+            <a href="{{ .RelPermalink }}">&larr; back to {{ .LinkTitle }}</a>
+        </nav>
+    {{ end }}
+{{ end }}
 	
 <footer>
-    <nav class="site-nav">{{ partial "nav.html" . }}</nav>
-
+    <nav class="footer-nav">
         <ul>
-        <li><a href="https://www.brown.edu/website-accessibility">Accessibility</a></li>
+        {{ range .Site.Menus.main.ByName }}
+            <li><a href="{{ .URL }}">{{ .Name }}</a></li>
+        {{ end }}
         </ul>
-	<p>{{ .Site.Copyright | markdownify }}</p>
+    </nav>
+    <section class="citation scoop"><h2>Citation</h2><p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Veritatis odio doloribus, vero odit quidem earum sapiente incidunt quibusdam a reiciendis eos illo id blanditiis esse, accusamus, error quisquam vel est.</p></section>
+    <ul class="external">
+        <li><a href="https://www.brown.edu/website-accessibility">Accessibility</a></li>
+        <li><a href="https://complit.brown.edu/">Comparative Literative at Brown</a></li>
+        <li><a href="https://cds.lib.brown.edu">Center for Digital Scholarship</a>, <a href="https://lib.brown.edu">Brown University Library</a></li>
+    </ul>
+	<p class="copyright"> &copy; {{ dateFormat "2006" now }} {{ .Site.Title | markdownify }}</p>
 </footer>
     {{ template "_internal/google_analytics.html" . }}
 

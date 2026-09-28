@@ -67,9 +67,15 @@
 
   <body 
     class="
-      {{ if and (not .IsPage) (in (slice "people" "pseudonyms" "articles") .Type) }}has-filters {{ end }}
-      {{ if and (.IsPage) (in (slice "people" "pseudonyms" "articles") .Type) }}db {{ end }}
+      {{ if in (slice "people" "pseudonyms" "articles") .Type }}
+        {{ if not .IsPage }}
+          has-filters 
+        {{ else }}
+          db 
+        {{ end }}
+      {{ end }}
     ">
     {{ partial "head.html" . }}
 
-    <main class="content">
+    <main class="content {{ if and (.IsPage) (in (slice "people" "pseudonyms" "articles") .Type) }}scoop {{ end }}
+">
