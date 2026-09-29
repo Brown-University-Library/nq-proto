@@ -16,25 +16,43 @@ document.addEventListener('DOMContentLoaded', () => {
 
   console.log('[Search System] Target search form detected:', searchForm.id || searchForm.className);
 
-  // Find or dynamically inject the #search-results container
-  let searchResultsContainer = document.getElementById('search-results');
+  // Find or dynamically inject the #count container
+  let searchResultsContainer = document.getElementById('count');
   if (!searchResultsContainer) {
-    console.log('[Search System] #search-results container not found in HTML. Creating container dynamically...');
+    console.log('[Search System] #count container not found in HTML. Creating container dynamically...');
     searchResultsContainer = document.createElement('div');
-    searchResultsContainer.id = 'search-results';
+    searchResultsContainer.id = 'count';
     searchResultsContainer.setAttribute('aria-live', 'polite');
     searchForm.after(searchResultsContainer);
+  }
+
+  // Find or dynamically inject the #terms container
+  let termsContainer = document.getElementById('terms');
+  if (!termsContainer) {
+    termsContainer = document.createElement('div');
+    termsContainer.id = 'terms';
+    termsContainer.className = 'search-summary-statement';
+    termsContainer.setAttribute('aria-live', 'polite');
+    searchResultsContainer.after(termsContainer);
   }
 
   const nameInput = document.getElementById('search-name');
   const detailsInput = document.getElementById('search-details');
   const locationInput = document.getElementById('search-locations');
+  const countrySelect = document.getElementById('search-country');
   const singleInput = document.getElementById('search-input');
 
   const birthAfterInput = document.getElementById('birth-after');
   const birthBeforeInput = document.getElementById('birth-before');
   const deathAfterInput = document.getElementById('death-after');
   const deathBeforeInput = document.getElementById('death-before');
+
+  // Helper: Normalize strings or arrays safely into lowercased string
+  function normalizeString(val) {
+    if (!val) return '';
+    if (Array.isArray(val)) return val.join(' ').toLowerCase();
+    return String(val).toLowerCase();
+  }
 
   // Helper: Extract clean path without slashes (e.g. "nq-proto/people/a10926c4c9686279")
   function cleanPath(urlStr) {
@@ -62,7 +80,7 @@ document.addEventListener('DOMContentLoaded', () => {
     return match ? parseInt(match[0], 10) : null;
   }
 
-  // Helper: Render the count heading inside #search-results
+  // Helper: Render primary count heading inside #search-results
   function updateCountDisplay(count, isFiltered = false) {
     if (!searchResultsContainer) return;
     searchResultsContainer.innerHTML = '';
@@ -71,21 +89,65 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (!isFiltered) {
       if (count === 1) {
-        heading.textContent = '1 contributor.';
+        heading.textContent = '1 contributor';
       } else {
-        heading.textContent = `${count} contributors.`;
+        heading.textContent = `${count} contributors`;
       }
     } else {
       if (count === 0) {
-        heading.textContent = 'No matching results found.';
+        heading.textContent = 'No matching results found';
       } else if (count === 1) {
         heading.textContent = '1 matching contributor.';
       } else {
-        heading.textContent = `${count} matching contributors.`;
+        heading.textContent = `${count} contributors`;
       }
     }
 
     searchResultsContainer.appendChild(heading);
+  }
+
+  // Helper: Format active parameters into readable $terms string
+  function getFormattedTerms(filterState) {
+    const activeTerms = [];
+
+    if (filterState.nameQuery) activeTerms.push(`"${filterState.nameQuery}"`);
+    if (filterState.locationQuery) activeTerms.push(`location "${filterState.locationQuery}"`);
+    if (filterState.selectedCountry) activeTerms.push(`country "${filterState.selectedCountry}"`);
+    if (filterState.detailsQuery) activeTerms.push(`description "${filterState.detailsQuery}"`);
+
+    if (filterState.selectedGenders && filterState.selectedGenders.length > 0) {
+      activeTerms.push(`gender (${filterState.selectedGenders.join(', ').toUpperCase()})`);
+    }
+
+    const dateParts = [];
+    if (filterState.dateFiltersActive.birthAfter) dateParts.push(`born after ${filterState.dateFiltersActive.birthAfter}`);
+    if (filterState.dateFiltersActive.birthBefore) dateParts.push(`born before ${filterState.dateFiltersActive.birthBefore}`);
+    if (filterState.dateFiltersActive.deathAfter) dateParts.push(`died after ${filterState.dateFiltersActive.deathAfter}`);
+    if (filterState.dateFiltersActive.deathBefore) dateParts.push(`died before ${filterState.dateFiltersActive.deathBefore}`);
+
+    if (dateParts.length > 0) {
+      activeTerms.push(dateParts.join(' and '));
+    }
+
+    if (activeTerms.length === 0) return '';
+    if (activeTerms.length === 1) return activeTerms[0];
+    if (activeTerms.length === 2) return `${activeTerms[0]} and ${activeTerms[1]}`;
+
+    return `${activeTerms.slice(0, -1).join(', ')}, and ${activeTerms[activeTerms.length - 1]}`;
+  }
+
+  // Helper: Render secondary dynamic "Your search for $terms..." statement inside #terms
+  function updateTermsSummaryDisplay(count, filterState) {
+    if (!termsContainer) return;
+
+    const termsStr = getFormattedTerms(filterState);
+    if (!termsStr) {
+      termsContainer.innerHTML = '';
+      return;
+    }
+
+    const contributorText = count === 1 ? 'contributor' : 'contributors';
+    termsContainer.innerHTML = `<p class="summary-line">Your search for <strong>${termsStr}</strong> found <strong>${count}</strong> ${contributorText}.</p>`;
   }
 
   // Display initial total count on page load
@@ -93,7 +155,7 @@ document.addEventListener('DOMContentLoaded', () => {
   updateCountDisplay(initialItems.length, false);
 
   // ==========================================
-  // 2. Dual-Thumb Slider Controller
+  // 2A. Dual-Thumb Slider Controller
   // ==========================================
   function setupDualSlider(minInputId, maxInputId, outMinId, outMaxId, minGap = 1) {
     const minInput = document.getElementById(minInputId);
@@ -154,6 +216,30 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // ==========================================
+  // 2B. Uppercase Letter Anchor Navigation Handler
+  // ==========================================
+  const alphabetSelect = document.getElementById('alphabet-select');
+  if (alphabetSelect) {
+    alphabetSelect.addEventListener('change', (e) => {
+      const targetHash = e.target.value;
+      if (!targetHash) return;
+
+      const rawId = targetHash.replace(/^#/, '');
+
+      const targetSection = document.getElementById(rawId) || 
+                            document.querySelector(`[id="${CSS.escape(rawId)}"]`);
+
+      if (targetSection) {
+        targetSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        history.pushState(null, null, targetHash);
+        console.log(`[Alphabet Nav] Jumped to section: #${rawId}`);
+      } else {
+        console.warn(`[Alphabet Nav] Target section "#${rawId}" not found in DOM.`);
+      }
+    });
+  }
+
+  // ==========================================
   // 3. Search Index Setup (Section-Aware)
   // ==========================================
   let lunrIndex = null;
@@ -169,7 +255,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     isFetching = true;
 
-    // Resolve index.json relative to the current section path (e.g. /people/index.json)
+    // Resolve index.json relative to current section path (e.g. /people/index.json)
     let sectionPath = window.location.pathname;
     if (!sectionPath.endsWith('/')) {
       sectionPath += '/';
@@ -194,16 +280,17 @@ document.addEventListener('DOMContentLoaded', () => {
         rawData = data;
         console.log(`[Search System] Search index fetched successfully. Loaded ${rawData.length} record(s).`, rawData);
 
-        const isPeopleSection = rawData.length > 0 && ('description' in rawData[0] || 'locations' in rawData[0] || 'gender' in rawData[0]);
+        const isPeopleSection = rawData.length > 0 && ('description' in rawData[0] || 'locations' in rawData[0] || 'gender' in rawData[0] || 'country' in rawData[0]);
 
         lunrIndex = lunr(function () {
           this.ref('url');
 
           if (isPeopleSection) {
-            console.log('[Search System] Index schema: People section (indexing name, altname, locations, gender, description)');
+            console.log('[Search System] Index schema: People section (indexing name, altname, locations, country, gender, description)');
             this.field('name', { boost: 10 });
             this.field('altname', { boost: 8 });
             this.field('locations', { boost: 7 });
+            this.field('country', { boost: 7 });
             this.field('gender', { boost: 5 });
             this.field('description', { boost: 5 });
           } else {
@@ -212,7 +299,13 @@ document.addEventListener('DOMContentLoaded', () => {
             this.field('url');
           }
 
-          rawData.forEach(doc => this.add(doc));
+          rawData.forEach(doc => {
+            const docCopy = { ...doc };
+            if (Array.isArray(docCopy.country)) {
+              docCopy.country = docCopy.country.join(' ');
+            }
+            this.add(docCopy);
+          });
         });
 
         console.log('[Search System] Lunr index built successfully.');
@@ -221,8 +314,9 @@ document.addEventListener('DOMContentLoaded', () => {
       .finally(() => { isFetching = false; });
   }
 
-  searchForm.querySelectorAll('input').forEach(input => {
-    input.addEventListener('focus', ensureIndexLoaded);
+  // Pre-load search index when focusing inputs inside search form
+  searchForm.querySelectorAll('input, select').forEach(control => {
+    control.addEventListener('focus', ensureIndexLoaded);
   });
 
   // ==========================================
@@ -258,19 +352,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const hasDateFilters = bAfterActive || bBeforeActive || dAfterActive || dBeforeActive;
 
-    // Extract text query inputs
+    // Extract text and dropdown query inputs
     const nameQuery = nameInput ? nameInput.value.trim().toLowerCase() : '';
     const detailsQuery = detailsInput ? detailsInput.value.trim().toLowerCase() : '';
     const locationQuery = locationInput ? locationInput.value.trim().toLowerCase() : '';
+    const selectedCountry = countrySelect ? countrySelect.value.trim().toLowerCase() : '';
 
-    // Extract checked gender values (e.g., ['m'], ['f'], or ['unknown'])
+    // Extract checked gender values
     const checkedGenderNodes = searchForm.querySelectorAll('input.gender-checkbox:checked, input[name="gender"]:checked');
     const selectedGenders = Array.from(checkedGenderNodes).map(cb => cb.value.trim().toLowerCase());
 
-    console.log('Query State:', {
+    const filterState = {
       nameQuery,
       detailsQuery,
       locationQuery,
+      selectedCountry,
       selectedGenders,
       dateFiltersActive: {
         birthAfter: bAfterActive ? bAfterVal : false,
@@ -278,9 +374,11 @@ document.addEventListener('DOMContentLoaded', () => {
         deathAfter: dAfterActive ? dAfterVal : false,
         deathBefore: dBeforeActive ? dBeforeVal : false
       }
-    });
+    };
 
-    if (!nameQuery && !detailsQuery && !locationQuery && selectedGenders.length === 0 && !hasDateFilters) {
+    console.log('Query State:', filterState);
+
+    if (!nameQuery && !detailsQuery && !locationQuery && !selectedCountry && selectedGenders.length === 0 && !hasDateFilters) {
       console.log('Form is completely empty. Resetting page visibility to default.');
       resetPageVisibility();
       console.groupEnd();
@@ -290,7 +388,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let candidateRefs = new Set();
 
     // 1. Candidate Selection (Lunr Query Builder API)
-    if (nameQuery || detailsQuery || locationQuery || selectedGenders.length > 0) {
+    if (nameQuery || detailsQuery || locationQuery || selectedCountry || selectedGenders.length > 0) {
       try {
         const lunrMatches = lunrIndex.query(q => {
           if (nameQuery) {
@@ -307,6 +405,13 @@ document.addEventListener('DOMContentLoaded', () => {
               q.term(term, { fields: ['locations'], boost: 10, usePipeline: false });
               q.term(`${term}*`, { fields: ['locations'], boost: 7, usePipeline: false });
               q.term(`*${term}*`, { fields: ['locations'], boost: 5, usePipeline: false });
+            });
+          }
+
+          if (selectedCountry) {
+            selectedCountry.split(/\s+/).filter(Boolean).forEach(term => {
+              q.term(term, { fields: ['country', 'locations'], boost: 10, usePipeline: false });
+              q.term(`${term}*`, { fields: ['country', 'locations'], boost: 5, usePipeline: false });
             });
           }
 
@@ -333,16 +438,23 @@ document.addEventListener('DOMContentLoaded', () => {
         const locTerm = locationQuery.toLowerCase();
         const nameTerm = nameQuery.toLowerCase();
         const detTerm = detailsQuery.toLowerCase();
+        const ctryTerm = selectedCountry.toLowerCase();
 
         rawData.forEach(item => {
-          const locMatch = !locTerm || (item.locations && item.locations.toLowerCase().includes(locTerm));
-          const nameMatch = !nameTerm || (item.name && item.name.toLowerCase().includes(nameTerm)) || (item.altname && item.altname.toLowerCase().includes(nameTerm));
-          const detMatch = !detTerm || (item.description && item.description.toLowerCase().includes(detTerm));
-          
-          const itemGender = (item.gender || '').toLowerCase();
+          const itemLocs = normalizeString(item.locations);
+          const itemCtry = normalizeString(item.country);
+          const itemName = normalizeString(item.name);
+          const itemAlt = normalizeString(item.altname);
+          const itemDesc = normalizeString(item.description);
+          const itemGender = normalizeString(item.gender);
+
+          const locMatch = !locTerm || itemLocs.includes(locTerm);
+          const ctryMatch = !ctryTerm || itemCtry.includes(ctryTerm) || itemLocs.includes(ctryTerm);
+          const nameMatch = !nameTerm || itemName.includes(nameTerm) || itemAlt.includes(nameTerm);
+          const detMatch = !detTerm || itemDesc.includes(detTerm);
           const genderMatch = selectedGenders.length === 0 || selectedGenders.includes(itemGender);
 
-          if (locMatch && nameMatch && detMatch && genderMatch) {
+          if (locMatch && ctryMatch && nameMatch && detMatch && genderMatch) {
             candidateRefs.add(item.url);
           }
         });
@@ -354,7 +466,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     console.log(`Candidate pool before exact post-filtering: ${candidateRefs.size} record(s).`);
 
-    // 2. Exact Post-Filtering (Date Ranges & Strict Gender Checkboxes)
+    // 2. Exact Post-Filtering (Country, Gender, Date Ranges)
     const dataMap = new Map(rawData.map(item => [item.url, item]));
     const matchingPaths = new Set();
     const matchingIds = new Set();
@@ -363,9 +475,17 @@ document.addEventListener('DOMContentLoaded', () => {
       const item = dataMap.get(ref);
       if (!item) return;
 
+      // Strict Country Filter
+      if (selectedCountry) {
+        const itemCtry = normalizeString(item.country);
+        const itemLocs = normalizeString(item.locations);
+        const matchesCountry = itemCtry.includes(selectedCountry) || itemLocs.includes(selectedCountry);
+        if (!matchesCountry) return;
+      }
+
       // Strict Gender Exact Match Filter
       if (selectedGenders.length > 0) {
-        const itemGender = (item.gender || '').toLowerCase();
+        const itemGender = normalizeString(item.gender);
         if (!selectedGenders.includes(itemGender)) return;
       }
 
@@ -384,7 +504,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     console.log(`Final matching path set (${matchingPaths.size}):`, Array.from(matchingPaths));
 
-    applyPageFilter(matchingPaths, matchingIds);
+    applyPageFilter(matchingPaths, matchingIds, filterState);
     console.groupEnd();
   });
 
@@ -394,6 +514,7 @@ document.addEventListener('DOMContentLoaded', () => {
   searchForm.addEventListener('reset', () => {
     console.log('[Search System] Form reset triggered.');
     resetPageVisibility();
+    if (alphabetSelect) alphabetSelect.selectedIndex = 0;
     setTimeout(() => {
       if (birthSlider) birthSlider.updateValues();
       if (deathSlider) deathSlider.updateValues();
@@ -403,7 +524,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // ==========================================
   // 6. Result Count & DOM Visibility Logic
   // ==========================================
-  function applyPageFilter(matchingPaths, matchingIds) {
+  function applyPageFilter(matchingPaths, matchingIds, filterState = null) {
     const pageListItems = document.querySelectorAll('.listing ul li');
     const glossarySections = document.querySelectorAll('section[id^="letter-"], section.glossary-group, .listing');
 
@@ -465,7 +586,11 @@ document.addEventListener('DOMContentLoaded', () => {
       console.log(`Glossary section visibility updated: ${hiddenSectionsCount} of ${glossarySections.length} section(s) hidden.`);
     }
 
+    // Update primary count heading AND secondary terms summary line in #terms
     updateCountDisplay(matchCount, true);
+    if (filterState) {
+      updateTermsSummaryDisplay(matchCount, filterState);
+    }
   }
 
   function resetPageVisibility() {
@@ -480,5 +605,8 @@ document.addEventListener('DOMContentLoaded', () => {
     glossarySections.forEach(section => section.style.display = '');
 
     updateCountDisplay(pageListItems.length, false);
+    if (termsContainer) {
+      termsContainer.innerHTML = '';
+    }
   }
 });

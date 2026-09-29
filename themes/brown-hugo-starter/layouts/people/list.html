@@ -5,40 +5,74 @@
   <form id="people-search" class="search" role="search">
     <div class="scoop">
       <div class="search-field">
-        <label for="search-name">Search Name</label>
+        <label for="search-name">Search by name</label>
         <input type="search" id="search-name" class="search-input" placeholder="e.g. Emilia Francis Dilke">
       </div>
       
       <div class="search-field">
-        <label for="search-details">Keywords</label>
+        <label for="search-details">Search by keyword</label>
         <input type="search" id="search-details" class="search-input" placeholder="e.g. writer, lawyer, clergy">
       </div>
 
       <div class="search-field">
-        <label for="search-locations">Habitat</label>
+        <label for="search-locations">Search location</label>
         <input type="search" id="search-locations" class="search-input" placeholder="e.g., Swarraton Rectory, Alresford, Winchester, Hampshire, England"></div>
     </div>
+
+    <h2>Filters</h2>
 
     <div class="gender-facet search-field">
       <fieldset>
         <legend>Gender</legend>
-      <label for="gender-female">
-      <input type="checkbox" id="gender-female" name="gender" class="gender-checkbox" value="F">
-      Female
-    </label>
-    <label for="gender-male">
-      <input type="checkbox" id="gender-male" name="gender" class="gender-checkbox" value="M">
-      Male
-    </label>
-    <label for="gender-unknown">
-      <input type="checkbox" id="gender-unknown" name="gender" class="gender-checkbox" value="unknown">
-      Unknown
-    </label>      </fieldset>
+        <label for="gender-female">
+        <input type="checkbox" id="gender-female" name="gender" class="gender-checkbox" value="F">
+        Female
+      </label>
+      <label for="gender-male">
+        <input type="checkbox" id="gender-male" name="gender" class="gender-checkbox" value="M">
+        Male
+      </label>
+      <label for="gender-unknown">
+        <input type="checkbox" id="gender-unknown" name="gender" class="gender-checkbox" value="unknown">
+        Unknown
+      </label>      
+      </fieldset>
+    </div>
+
+    <div class="search-field">
+      <label for="search-country">Modern country</label>
+      <select name="country" id="search-country">
+        <option value="" selected disabled>All countries</option>
+        <option value="Australia">Australia</option>
+        <option value="Austria">Austria</option>
+        <option value="Brazil">Brazil</option>
+        <option value="Bulgaria">Bulgaria</option>
+        <option value="Canada">Canada</option>
+        <option value="England">England</option>
+        <option value="France">France</option>
+        <option value="Guernsey">Guernsey</option>
+        <option value="India">India</option>
+        <option value="Ireland">Ireland</option>
+        <option value="Isle of Man">Isle of Man</option>
+        <option value="Italy">Italy</option>
+        <option value="Japan">Japan</option>
+        <option value="Malaysia">Malaysia</option>
+        <option value="New Zealand">New Zealand</option>
+        <option value="Northern Ireland">Northern Ireland</option>
+        <option value="Norway">Norway</option>
+        <option value="Russia">Russia</option>
+        <option value="Scotland">Scotland</option>
+        <option value="South Africa">South Africa</option>
+        <option value="Sweden">Sweden</option>
+        <option value="Switzerland">Switzerland</option>
+        <option value="United States of America">United States of America</option>
+        <option value="Wales">Wales</option>
+      </select>
     </div>
 
     <!-- Date Range Sliders -->
     <div class="search-field date-range">
-      <fieldset class="scoop">
+      <fieldset class="">
         <legend>Lifespan / Date Ranges</legend>
 
         <!-- Birth Multi-Range Slider -->
@@ -76,32 +110,35 @@
     
     <div class="form-mgmt">
       <button type="submit" class="lozenge">Search</button>
-      <button type="reset">Clear search</button>
+      <button type="reset">Reset search</button>
     </div>
   </form>
 </nav>
 
-<h2 id="search-results">{{ len $.RegularPages }} contributors</h2>
+<div id="count">{{ len $.RegularPages }} contributors</div>
 
 {{ $groupedPages := .Pages.GroupByParam "glossary" }}
 
 {{ if $groupedPages }}
   {{/* Anchor Navigation Bar */}}
-  <nav class="glossary-nav">
-    <ul>
-      {{ range $groupedPages }}
-        {{ if .Key }}
-          <li>
-            <a href="#letter-{{ .Key }}">{{ .Key }}</a>
-          </li>
-        {{ else }}
-          <li>
-            <a href="#letter-other">Other</a>
-          </li>
-        {{ end }}
-      {{ end }}
-    </ul>
-  </nav>
+<div class="glossary-nav">
+  <label for="alphabet-select">View by letter</label>
+  <select id="alphabet-select" aria-label="View by letter section">
+    <option value="" selected disabled>A-Z</option>
+    {{- $firstChars := slice -}}
+    {{- range where .Pages "IsPage" true -}}
+      {{- $firstChar := upper (substr .Title 0 1) -}}
+      {{- $firstChars = $firstChars | append $firstChar -}}
+    {{- end -}}
+    {{- range ($firstChars | uniq | sort) -}}
+      <option value="#letter-{{ . }}">{{ . }}</option>
+    {{- end -}}
+  </select>
+</div>
+
+  <div id="view-map"><a href="" class="knockout">View Map</a></div>
+
+  <div id="terms" class="search-summary-statement" aria-live="polite"></div>
 
   {{/* Grouped Content Sections */}}
   <div class="listing">

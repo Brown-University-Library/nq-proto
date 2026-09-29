@@ -3,6 +3,16 @@
 
 {{- range where .Pages "IsPage" true -}}
   {{- if eq $currentSection "people" -}}
+    {{/* Convert slice or string country parameter into a flat space-delimited string */}}
+    {{- $countryVal := "" -}}
+    {{- with .Params.countries -}}
+      {{- if reflect.IsSlice . -}}
+        {{- $countryVal = delimit . " " -}}
+      {{- else -}}
+        {{- $countryVal = . -}}
+      {{- end -}}
+    {{- end -}}
+
     {{- $item := dict 
       "url" .Permalink 
       "name" .Title 
@@ -12,6 +22,7 @@
       "death" (cond (ne .Params.death nil) (int .Params.death) "")
       "locations" (default "" .Params.locations)
       "gender" (default "" .Params.gender)
+      "country" $countryVal
     -}}
     {{- $searchIndex = $searchIndex | append $item -}}
 

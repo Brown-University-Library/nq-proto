@@ -49,9 +49,9 @@
   {{ end }}
   
   {{ with .GetTerms "gender" }}
-   <h3>Gender</h3>
+   <h3 class="inline">Gender</h3>
     {{ range . }}
-      <p><a href="{{ .RelPermalink }}">{{ .LinkTitle }}</a></p>
+      <p class="inline"><a href="{{ .RelPermalink }}">{{ .LinkTitle }}</a></p>
     {{ end }}
   {{ end }}
 
