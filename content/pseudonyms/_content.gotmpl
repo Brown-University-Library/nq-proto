@@ -38,11 +38,21 @@
     {{ $personLabel = printf "%s (d. %s)" $name $death }}
   {{ end }}
 
+  {{/* Collect all publication years across all articles for this author */}}
+  {{ $years := slice }}
+
   {{/* Track citations grouped by signature for this specific author */}}
   {{ $articlesBySig := dict }}
 
   {{ range .articles }}
     {{ $art := . }}
+
+    {{/* Extract year from the article's date field (takes the first 4 characters YYYY) */}}
+    {{ with $art.date }}
+      {{ $year := substr . 0 4 }}
+      {{ $years = $years | append $year }}
+    {{ end }}
+
     {{ with .signature }}
       {{/* Clean leading/trailing whitespace from the signature */}}
       {{ $cleanSig := trim . " \t\n\r" }}
@@ -69,6 +79,19 @@
     {{ end }}
   {{ end }}
 
+  {{/* Determine active year range for this author */}}
+  {{ $active := "" }}
+  {{ if $years }}
+    {{ $sortedYears := sort $years }}
+    {{ $minYear := index $sortedYears 0 }}
+    {{ $maxYear := index $sortedYears (sub (len $sortedYears) 1) }}
+    {{ if eq $minYear $maxYear }}
+      {{ $active = $minYear }}
+    {{ else }}
+      {{ $active = printf "%s – %s" $minYear $maxYear }}
+    {{ end }}
+  {{ end }}
+
   {{/* Merge this author's signatures into the global $sigMap */}}
   {{ range $sig, $citations := $articlesBySig }}
     {{ $existingPeople := index $sigMap $sig | default slice }}
@@ -76,6 +99,7 @@
     {{ $personData := dict 
       "label" $personLabel 
       "authorId" $authorId 
+      "active" $active
       "citations" $citations 
     }}
 

@@ -3,9 +3,8 @@
 
 {{- range where .Pages "IsPage" true -}}
   {{- if eq $currentSection "people" -}}
-    {{/* Convert slice or string country parameter into a flat space-delimited string */}}
     {{- $countryVal := "" -}}
-    {{- with .Params.countries -}}
+    {{- with .Params.country -}}
       {{- if reflect.IsSlice . -}}
         {{- $countryVal = delimit . " " -}}
       {{- else -}}
@@ -26,7 +25,35 @@
     -}}
     {{- $searchIndex = $searchIndex | append $item -}}
 
-  {{- else if or (eq $currentSection "pseudonyms") (eq $currentSection "articles") -}}
+  {{- else if eq $currentSection "pseudonyms" -}}
+    {{/* Safely handle .Params.people as a slice or map */}}
+    {{- $activeVal := "" -}}
+    {{- with .Params.people -}}
+      {{- if reflect.IsSlice . -}}
+        {{/* If people is a list, collect all active values or inspect the first item */}}
+        {{- $actives := slice -}}
+        {{- range . -}}
+          {{- with .active -}}
+            {{- $actives = $actives | append (string .) -}}
+          {{- end -}}
+        {{- end -}}
+        {{- $activeVal = delimit $actives " " -}}
+      {{- else if reflect.IsMap . -}}
+        {{/* If people is a single map */}}
+        {{- with .active -}}
+          {{- $activeVal = string . -}}
+        {{- end -}}
+      {{- end -}}
+    {{- end -}}
+
+    {{- $item := dict 
+      "url" .Permalink 
+      "name" .Title 
+      "active" $activeVal
+    -}}
+    {{- $searchIndex = $searchIndex | append $item -}}
+
+  {{- else if eq $currentSection "articles" -}}
     {{- $item := dict 
       "url" .Permalink 
       "name" .Title 

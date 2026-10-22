@@ -1,7 +1,10 @@
 <ul class="main-menu">
-  {{ range.Site.Menus.main }}
-  <li>
-    <a href="{{ .URL }}">{{ .Name }}</a>
-  </li>
+  {{ range .Site.Menus.main.ByWeight }}
+    {{ $isCurrent := $.IsMenuCurrent "main" . }}
+    <li class="{{ if $isCurrent }}current{{ end }}">
+      <a href="{{ .URL }}" {{ if $isCurrent }}aria-current="page"{{ end }}>
+        {{ .Name }}
+      </a>
+    </li>
   {{ end }}
 </ul>

@@ -5,43 +5,60 @@
   <form id="pseud-search" class="search" role="search">
     <div class="search-field scoop">
       <label for="search-input">Search Pseudonyms</label>
-      <input type="search" id="search-input" class="search-input" placeholder="e.g. Alpha">
+      <input type="search" id="search-name" class="search-input" placeholder="e.g. Alpha">
     </div>
+    
+    <div class="search-field date-range">
+      <fieldset>
+      <legend>Active Publishing Date</legend>
+      <div class="slider-block">
+      <label class="slider-header">
+        <span>Active between <strong id="out-active-after">1850</strong> and <strong
+            id="out-active-before">1950</strong></span>
+      </label>
+      <div class="multi-range-container">
+        <div class="slider-track"></div>
+        <input type="range" id="active-after" name="active_after" min="1850" max="1949" value="1850"
+          aria-label="Active Year Minimum">
+        <input type="range" id="active-before" name="active_before" min="1851" max="1950" value="1950"
+          aria-label="Active Year Maximum">
+      </div>
+      </div>
+      </fieldset>
+    </div>
+
     <div class="form-mgmt">
-      <button type="submit" class="lozenge">Search</button>
-      <button type="reset">Clear search</button>
+      <button type="submit" class="lozenge">Submit</button>
+      <button type="reset">Reset filters</button>
     </div>
   </form>
 
 </nav>
 
-<section id="search-results">
-<template id="search-result" hidden>
-    <h3 class="pseud-result"><a href=""></a></h3>
-</template>
-</section>
+<div id="count">{{ len $.RegularPages }} pseudonyms</div>
+
 
 {{ $groupedPages := .Pages.GroupByParam "glossary" }}
 
 {{ if $groupedPages }}
   {{/* Anchor Navigation Bar */}}
-  <nav class="glossary-nav">
-    <ul>
-      {{ range $groupedPages }}
-        {{ if .Key }}
-          <li>
-            <a href="#letter-{{ .Key }}">{{ .Key }}</a>
-          </li>
-        {{ else }}
-          <li>
-            <a href="#letter-other">Other</a>
-          </li>
-        {{ end }}
-      {{ end }}
-    </ul>
-  </nav>
+  <div class="glossary-nav">
+      <label for="alphabet-select">View by letter</label>
+  <select id="alphabet-select" aria-label="View by letter section">
+    <option value="" selected disabled>A-Z</option>
+    {{- $firstChars := slice -}}
+    {{- range where .Pages "IsPage" true -}}
+      {{- $firstChar := upper (substr .Title 0 1) -}}
+      {{- $firstChars = $firstChars | append $firstChar -}}
+    {{- end -}}
+    {{- range ($firstChars | uniq | sort) -}}
+      <option value="#letter-{{ . }}">{{ . }}</option>
+    {{- end -}}
+  </select>
+  </div>
 
-  <hr />
+   <div id="terms" class="search-summary-statement" aria-live="polite"></div>
+
 
   {{/* Grouped Content Sections */}}
   {{ range $groupedPages }}
@@ -58,7 +75,7 @@
         {{ end }}
       </h2>
 
-      <ul class="three-col fancy">
+      <ul class="two-col fancy">
         {{ range .Pages }}
           <li>
             <a href="{{ .RelPermalink }}">{{ .Title }}</a>

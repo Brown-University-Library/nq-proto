@@ -42,10 +42,15 @@ document.addEventListener('DOMContentLoaded', () => {
   const countrySelect = document.getElementById('search-country');
   const singleInput = document.getElementById('search-input');
 
+  // People Date Inputs
   const birthAfterInput = document.getElementById('birth-after');
   const birthBeforeInput = document.getElementById('birth-before');
   const deathAfterInput = document.getElementById('death-after');
   const deathBeforeInput = document.getElementById('death-before');
+
+  // Pseudonym Active Date Inputs
+  const activeAfterInput = document.getElementById('active-after');
+  const activeBeforeInput = document.getElementById('active-before');
 
   // Helper: Normalize strings or arrays safely into lowercased string
   function normalizeString(val) {
@@ -80,7 +85,24 @@ document.addEventListener('DOMContentLoaded', () => {
     return match ? parseInt(match[0], 10) : null;
   }
 
-  // Helper: Render primary count heading inside #search-results
+  // Helper: Parse single active years ("1870") or ranges ("1870 - 1883") into min and max bounds
+  function parseActiveSpan(val) {
+    if (!val) return null;
+    const str = String(val);
+    const matches = str.match(/\d{3,4}/g);
+    if (!matches || matches.length === 0) return null;
+
+    if (matches.length === 1) {
+      const yr = parseInt(matches[0], 10);
+      return { start: yr, end: yr };
+    }
+
+    const start = parseInt(matches[0], 10);
+    const end = parseInt(matches[1], 10);
+    return { start: Math.min(start, end), end: Math.max(start, end) };
+  }
+
+  // Helper: Render primary count heading inside #count
   function updateCountDisplay(count, isFiltered = false) {
     if (!searchResultsContainer) return;
     searchResultsContainer.innerHTML = '';
@@ -88,18 +110,14 @@ document.addEventListener('DOMContentLoaded', () => {
     heading.className = 'search-results-count';
 
     if (!isFiltered) {
-      if (count === 1) {
-        heading.textContent = '1 contributor';
-      } else {
-        heading.textContent = `${count} contributors`;
-      }
+      heading.textContent = count === 1 ? '1 item.' : `${count} items.`;
     } else {
       if (count === 0) {
-        heading.textContent = 'No matching results found';
+        heading.textContent = 'No matching results found.';
       } else if (count === 1) {
-        heading.textContent = '1 matching contributor.';
+        heading.textContent = '1 matching item.';
       } else {
-        heading.textContent = `${count} contributors`;
+        heading.textContent = `${count} matching items.`;
       }
     }
 
@@ -125,6 +143,9 @@ document.addEventListener('DOMContentLoaded', () => {
     if (filterState.dateFiltersActive.deathAfter) dateParts.push(`died after ${filterState.dateFiltersActive.deathAfter}`);
     if (filterState.dateFiltersActive.deathBefore) dateParts.push(`died before ${filterState.dateFiltersActive.deathBefore}`);
 
+    if (filterState.activeDatesActive.activeAfter) dateParts.push(`active after ${filterState.activeDatesActive.activeAfter}`);
+    if (filterState.activeDatesActive.activeBefore) dateParts.push(`active before ${filterState.activeDatesActive.activeBefore}`);
+
     if (dateParts.length > 0) {
       activeTerms.push(dateParts.join(' and '));
     }
@@ -146,8 +167,8 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
-    const contributorText = count === 1 ? 'contributor' : 'contributors';
-    termsContainer.innerHTML = `<p class="summary-line">Your search for <strong>${termsStr}</strong> found <strong>${count}</strong> ${contributorText}.</p>`;
+    const itemText = count === 1 ? 'item' : 'items';
+    termsContainer.innerHTML = `<p class="summary-line">Your search for <strong>${termsStr}</strong> found <strong>${count}</strong> ${itemText}.</p>`;
   }
 
   // Display initial total count on page load
@@ -210,8 +231,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const birthSlider = setupDualSlider('birth-after', 'birth-before', 'out-birth-after', 'out-birth-before');
   const deathSlider = setupDualSlider('death-after', 'death-before', 'out-death-after', 'out-death-before');
+  const activeSlider = setupDualSlider('active-after', 'active-before', 'out-active-after', 'out-active-before');
 
-  if (birthSlider || deathSlider) {
+  if (birthSlider || deathSlider || activeSlider) {
     console.log('[Search System] Dual-thumb range sliders initialized.');
   }
 
@@ -255,7 +277,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     isFetching = true;
 
-    // Resolve index.json relative to current section path (e.g. /people/index.json)
+    // Resolve index.json relative to current section path (e.g. /pseudonyms/index.json)
     let sectionPath = window.location.pathname;
     if (!sectionPath.endsWith('/')) {
       sectionPath += '/';
@@ -294,7 +316,7 @@ document.addEventListener('DOMContentLoaded', () => {
             this.field('gender', { boost: 5 });
             this.field('description', { boost: 5 });
           } else {
-            console.log('[Search System] Index schema: Standard section (indexing name, url)');
+            console.log('[Search System] Index schema: Standard/Pseudonym section (indexing name, url)');
             this.field('name', { boost: 10 });
             this.field('url');
           }
@@ -333,7 +355,7 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
-    // Parse date range input bounds
+    // Parse People date range input bounds
     const bAfterVal = birthAfterInput ? parseInt(birthAfterInput.value, 10) : null;
     const bBeforeVal = birthBeforeInput ? parseInt(birthBeforeInput.value, 10) : null;
     const dAfterVal = deathAfterInput ? parseInt(deathAfterInput.value, 10) : null;
@@ -344,16 +366,26 @@ document.addEventListener('DOMContentLoaded', () => {
     const dMin = deathAfterInput ? parseInt(deathAfterInput.min, 10) : null;
     const dMax = deathBeforeInput ? parseInt(deathBeforeInput.max, 10) : null;
 
-    // Check if user has explicitly moved range controls
     const bAfterActive = bAfterVal !== null && bMin !== null && bAfterVal > bMin;
     const bBeforeActive = bBeforeVal !== null && bMax !== null && bBeforeVal < bMax;
     const dAfterActive = dAfterVal !== null && dMin !== null && dAfterVal > dMin;
     const dBeforeActive = dBeforeVal !== null && dMax !== null && dBeforeVal < dMax;
 
-    const hasDateFilters = bAfterActive || bBeforeActive || dAfterActive || dBeforeActive;
+    const hasPeopleDateFilters = bAfterActive || bBeforeActive || dAfterActive || dBeforeActive;
+
+    // Parse Pseudonym active date range bounds
+    const actAfterVal = activeAfterInput ? parseInt(activeAfterInput.value, 10) : null;
+    const actBeforeVal = activeBeforeInput ? parseInt(activeBeforeInput.value, 10) : null;
+    const actMin = activeAfterInput ? parseInt(activeAfterInput.min, 10) : null;
+    const actMax = activeBeforeInput ? parseInt(activeBeforeInput.max, 10) : null;
+
+    const actAfterActive = actAfterVal !== null && actMin !== null && actAfterVal > actMin;
+    const actBeforeActive = actBeforeVal !== null && actMax !== null && actBeforeVal < actMax;
+
+    const hasActiveDateFilters = actAfterActive || actBeforeActive;
 
     // Extract text and dropdown query inputs
-    const nameQuery = nameInput ? nameInput.value.trim().toLowerCase() : '';
+    const nameQuery = nameInput ? nameInput.value.trim().toLowerCase() : (singleInput ? singleInput.value.trim().toLowerCase() : '');
     const detailsQuery = detailsInput ? detailsInput.value.trim().toLowerCase() : '';
     const locationQuery = locationInput ? locationInput.value.trim().toLowerCase() : '';
     const selectedCountry = countrySelect ? countrySelect.value.trim().toLowerCase() : '';
@@ -373,12 +405,16 @@ document.addEventListener('DOMContentLoaded', () => {
         birthBefore: bBeforeActive ? bBeforeVal : false,
         deathAfter: dAfterActive ? dAfterVal : false,
         deathBefore: dBeforeActive ? dBeforeVal : false
+      },
+      activeDatesActive: {
+        activeAfter: actAfterActive ? actAfterVal : false,
+        activeBefore: actBeforeActive ? actBeforeVal : false
       }
     };
 
     console.log('Query State:', filterState);
 
-    if (!nameQuery && !detailsQuery && !locationQuery && !selectedCountry && selectedGenders.length === 0 && !hasDateFilters) {
+    if (!nameQuery && !detailsQuery && !locationQuery && !selectedCountry && selectedGenders.length === 0 && !hasPeopleDateFilters && !hasActiveDateFilters) {
       console.log('Form is completely empty. Resetting page visibility to default.');
       resetPageVisibility();
       console.groupEnd();
@@ -395,8 +431,6 @@ document.addEventListener('DOMContentLoaded', () => {
             nameQuery.split(/\s+/).filter(Boolean).forEach(term => {
               q.term(term, { fields: ['name'], boost: 10, usePipeline: false });
               q.term(`${term}*`, { fields: ['name'], boost: 5, usePipeline: false });
-              q.term(term, { fields: ['altname'], boost: 8, usePipeline: false });
-              q.term(`${term}*`, { fields: ['altname'], boost: 4, usePipeline: false });
             });
           }
 
@@ -466,7 +500,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     console.log(`Candidate pool before exact post-filtering: ${candidateRefs.size} record(s).`);
 
-    // 2. Exact Post-Filtering (Country, Gender, Date Ranges)
+    // 2. Exact Post-Filtering (Active Dates, Country, Gender, Date Ranges)
     const dataMap = new Map(rawData.map(item => [item.url, item]));
     const matchingPaths = new Set();
     const matchingIds = new Set();
@@ -474,6 +508,18 @@ document.addEventListener('DOMContentLoaded', () => {
     candidateRefs.forEach(ref => {
       const item = dataMap.get(ref);
       if (!item) return;
+
+      // Robust Active Date Span Overlap Filter for Pseudonyms
+      if (hasActiveDateFilters) {
+        const span = parseActiveSpan(item.active);
+        if (!span) return;
+
+        // Check range overlap: item active range must intersect slider bounds [actAfterVal, actBeforeVal]
+        const filterMin = actAfterVal !== null ? actAfterVal : actMin;
+        const filterMax = actBeforeVal !== null ? actBeforeVal : actMax;
+
+        if (span.end < filterMin || span.start > filterMax) return;
+      }
 
       // Strict Country Filter
       if (selectedCountry) {
@@ -489,7 +535,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!selectedGenders.includes(itemGender)) return;
       }
 
-      // Date Range Filters
+      // Date Range Filters for People
       const birthYear = parseYear(item.birth);
       const deathYear = parseYear(item.death);
 
@@ -518,6 +564,7 @@ document.addEventListener('DOMContentLoaded', () => {
     setTimeout(() => {
       if (birthSlider) birthSlider.updateValues();
       if (deathSlider) deathSlider.updateValues();
+      if (activeSlider) activeSlider.updateValues();
     }, 0);
   });
 

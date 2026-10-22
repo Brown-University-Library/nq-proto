@@ -10,15 +10,3 @@ The Index will identify the authorship of thousands of anonymous contributions t
 <a class="knockout" href="people">Browse Contributors</a>
 <a class="knockout" href="pseudonyms">Browse Pseudonyms</a>
 </div>
-
-## Highlighted Contributors
-
-- [Emma Elizabeth Cope](people/42d6aa5ea70ae3ce/)
-- [Charles Wentworth Dilke (2)](people/5cf7a506af6b489d/)
-- [Henry Anderton](people/ba41b780c3a02edc/)
-
-## Highlighted Pseudonyms
-
-- [C.J.](pseudonyms//c.-j./)
-- [D.S.](pseudonyms/d.-s./)
-- [Genealogist](pseudonyms/genealogist/)
