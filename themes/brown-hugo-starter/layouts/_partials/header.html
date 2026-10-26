@@ -23,6 +23,7 @@
     <!-- on list pages only, for lunr search -->
     {{ if and (not .IsPage) (in (slice "people" "pseudonyms" "articles") .Type) }}
       <script src="https://unpkg.com/lunr/lunr.js"></script>
+      <script src="https://cdn.jsdelivr.net/npm/itemsjs@1.0.48/dist/itemsjs.min.js"></script>
       {{ with resources.Get "js/lunr.js" }}
         <script src="{{ .RelPermalink }}"></script>
       {{ end }}

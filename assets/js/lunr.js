@@ -1,5 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
-  console.log('[Search System] Initializing search engine...');
+  console.log('[Search System] Initializing hybrid Lunr + Items.js search engine...');
 
   // ==========================================
   // 1. DOM Element Selectors & Fallback Injection
@@ -78,28 +78,27 @@ document.addEventListener('DOMContentLoaded', () => {
     return parts.length > 0 ? parts[parts.length - 1] : '';
   }
 
-  // Helper: Extract safe year numbers from "1850", 1850, or "c. 1850"
+  // Helper: Extract safe year numbers
   function parseYear(val) {
     if (val === null || val === undefined || val === '') return null;
     const match = String(val).match(/\d{3,4}/);
     return match ? parseInt(match[0], 10) : null;
   }
 
-  // Helper: Parse single active years ("1870") or ranges ("1870 - 1883") into min and max bounds
+  // Helper: Parse active dates ("1870" or "1870 - 1883") into numeric start and end
   function parseActiveSpan(val) {
-    if (!val) return null;
-    const str = String(val);
-    const matches = str.match(/\d{3,4}/g);
-    if (!matches || matches.length === 0) return null;
+    if (!val) return { active_start: null, active_end: null };
+    const matches = String(val).match(/\d{3,4}/g);
+    if (!matches || matches.length === 0) return { active_start: null, active_end: null };
 
     if (matches.length === 1) {
       const yr = parseInt(matches[0], 10);
-      return { start: yr, end: yr };
+      return { active_start: yr, active_end: yr };
     }
 
     const start = parseInt(matches[0], 10);
     const end = parseInt(matches[1], 10);
-    return { start: Math.min(start, end), end: Math.max(start, end) };
+    return { active_start: Math.min(start, end), active_end: Math.max(start, end) };
   }
 
   // Helper: Render primary count heading inside #count
@@ -262,14 +261,15 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // ==========================================
-  // 3. Search Index Setup (Section-Aware)
+  // 3. Search Engine Setup (Lunr.js + Items.js)
   // ==========================================
   let lunrIndex = null;
+  let itemsjsInstance = null;
   let rawData = [];
   let isFetching = false;
 
   function ensureIndexLoaded() {
-    if (lunrIndex) return Promise.resolve();
+    if (lunrIndex && itemsjsInstance) return Promise.resolve();
     if (isFetching) {
       console.log('[Search System] Index fetch already in progress...');
       return Promise.resolve();
@@ -277,7 +277,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     isFetching = true;
 
-    // Resolve index.json relative to current section path (e.g. /pseudonyms/index.json)
     let sectionPath = window.location.pathname;
     if (!sectionPath.endsWith('/')) {
       sectionPath += '/';
@@ -299,24 +298,55 @@ document.addEventListener('DOMContentLoaded', () => {
         return response.json();
       })
       .then(data => {
-        rawData = data;
-        console.log(`[Search System] Search index fetched successfully. Loaded ${rawData.length} record(s).`, rawData);
+        // Pre-process raw data to enrich with numeric fields for Items.js range filters
+        rawData = data.map(item => {
+          const birthYr = parseYear(item.birth);
+          const deathYr = parseYear(item.death);
+          const activeSpan = parseActiveSpan(item.active);
 
-        const isPeopleSection = rawData.length > 0 && ('description' in rawData[0] || 'locations' in rawData[0] || 'gender' in rawData[0] || 'country' in rawData[0]);
+          // Convert space/comma-delimited countries into arrays for Items.js facets
+          let countryArray = [];
+          if (Array.isArray(item.country)) {
+            countryArray = item.country.map(c => String(c).trim()).filter(Boolean);
+          } else if (item.country) {
+            countryArray = String(item.country).split(/\s+/).map(c => c.trim()).filter(Boolean);
+          }
 
+          return {
+            ...item,
+            birth_num: birthYr,
+            death_num: deathYr,
+            active_start: activeSpan.active_start,
+            active_end: activeSpan.active_end,
+            country_facet: countryArray,
+            gender_facet: item.gender ? [String(item.gender).trim().toLowerCase()] : []
+          };
+        });
+
+        console.log(`[Search System] Loaded and enriched ${rawData.length} record(s).`, rawData);
+
+        const hasPeopleFields = rawData.length > 0 && ('description' in rawData[0] || 'locations' in rawData[0] || 'gender' in rawData[0] || 'country' in rawData[0]);
+        const hasPseudonymFields = rawData.length > 0 && ('active' in rawData[0]);
+
+        // A. Build Lunr.js Index for Text Search
         lunrIndex = lunr(function () {
           this.ref('url');
 
-          if (isPeopleSection) {
-            console.log('[Search System] Index schema: People section (indexing name, altname, locations, country, gender, description)');
+          if (hasPeopleFields) {
+            console.log('[Search System] Lunr Schema: People section');
             this.field('name', { boost: 10 });
             this.field('altname', { boost: 8 });
             this.field('locations', { boost: 7 });
             this.field('country', { boost: 7 });
             this.field('gender', { boost: 5 });
             this.field('description', { boost: 5 });
+          } else if (hasPseudonymFields) {
+            console.log('[Search System] Lunr Schema: Pseudonym section');
+            this.field('name', { boost: 10 });
+            this.field('active', { boost: 5 });
+            this.field('url');
           } else {
-            console.log('[Search System] Index schema: Standard/Pseudonym section (indexing name, url)');
+            console.log('[Search System] Lunr Schema: Standard section');
             this.field('name', { boost: 10 });
             this.field('url');
           }
@@ -330,7 +360,40 @@ document.addEventListener('DOMContentLoaded', () => {
           });
         });
 
-        console.log('[Search System] Lunr index built successfully.');
+        // B. Build Items.js Instance for Gender, Country, and Lifespan Ranges
+        itemsjsInstance = itemsjs(rawData, {
+          native_search_enabled: false,
+          aggregations: {
+            country_facet: {
+              title: 'Country',
+              size: 50,
+              conjunction: false
+            },
+            gender_facet: {
+              title: 'Gender',
+              size: 10,
+              conjunction: false
+            },
+            birth_num: {
+              title: 'Birth Year',
+              type: 'range'
+            },
+            death_num: {
+              title: 'Death Year',
+              type: 'range'
+            },
+            active_start: {
+              title: 'Active Start Year',
+              type: 'range'
+            },
+            active_end: {
+              title: 'Active End Year',
+              type: 'range'
+            }
+          }
+        });
+
+        console.log('[Search System] Lunr.js and Items.js engines built successfully.');
       })
       .catch(error => console.error('[Search System] Error fetching search index:', error))
       .finally(() => { isFetching = false; });
@@ -342,15 +405,15 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // ==========================================
-  // 4. Form Submit & Filter Handler
+  // 4. Form Submit & Combined Search Engine
   // ==========================================
   searchForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     console.group('[Search Execution]');
 
     await ensureIndexLoaded();
-    if (!rawData || rawData.length === 0) {
-      console.warn('[Search System] Aborting search: rawData is empty or failed to load.');
+    if (!rawData || rawData.length === 0 || !itemsjsInstance) {
+      console.warn('[Search System] Aborting search: rawData is empty or engines failed to load.');
       console.groupEnd();
       return;
     }
@@ -388,7 +451,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const nameQuery = nameInput ? nameInput.value.trim().toLowerCase() : (singleInput ? singleInput.value.trim().toLowerCase() : '');
     const detailsQuery = detailsInput ? detailsInput.value.trim().toLowerCase() : '';
     const locationQuery = locationInput ? locationInput.value.trim().toLowerCase() : '';
-    const selectedCountry = countrySelect ? countrySelect.value.trim().toLowerCase() : '';
+    const selectedCountry = countrySelect ? countrySelect.value.trim() : '';
 
     // Extract checked gender values
     const checkedGenderNodes = searchForm.querySelectorAll('input.gender-checkbox:checked, input[name="gender"]:checked');
@@ -414,17 +477,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
     console.log('Query State:', filterState);
 
-    if (!nameQuery && !detailsQuery && !locationQuery && !selectedCountry && selectedGenders.length === 0 && !hasPeopleDateFilters && !hasActiveDateFilters) {
+    const hasTextQuery = nameQuery || detailsQuery || locationQuery;
+
+    if (!hasTextQuery && !selectedCountry && selectedGenders.length === 0 && !hasPeopleDateFilters && !hasActiveDateFilters) {
       console.log('Form is completely empty. Resetting page visibility to default.');
       resetPageVisibility();
       console.groupEnd();
       return;
     }
 
-    let candidateRefs = new Set();
+    // STEP 1: Lunr.js Full-Text Search Execution
+    let lunrMatchedUrls = null;
 
-    // 1. Candidate Selection (Lunr Query Builder API)
-    if (nameQuery || detailsQuery || locationQuery || selectedCountry || selectedGenders.length > 0) {
+    if (hasTextQuery) {
       try {
         const lunrMatches = lunrIndex.query(q => {
           if (nameQuery) {
@@ -442,113 +507,80 @@ document.addEventListener('DOMContentLoaded', () => {
             });
           }
 
-          if (selectedCountry) {
-            selectedCountry.split(/\s+/).filter(Boolean).forEach(term => {
-              q.term(term, { fields: ['country', 'locations'], boost: 10, usePipeline: false });
-              q.term(`${term}*`, { fields: ['country', 'locations'], boost: 5, usePipeline: false });
-            });
-          }
-
           if (detailsQuery) {
             detailsQuery.split(/\s+/).filter(Boolean).forEach(term => {
               q.term(term, { fields: ['description'], boost: 5, usePipeline: false });
               q.term(`${term}*`, { fields: ['description'], boost: 3, usePipeline: false });
             });
           }
-
-          if (selectedGenders.length > 0) {
-            selectedGenders.forEach(genderTerm => {
-              q.term(genderTerm, { fields: ['gender'], boost: 10, usePipeline: false });
-            });
-          }
         });
 
-        console.log(`Lunr returned ${lunrMatches.length} match(es):`, lunrMatches);
-        lunrMatches.forEach(res => candidateRefs.add(res.ref));
+        lunrMatchedUrls = new Set(lunrMatches.map(res => res.ref));
+        console.log(`Lunr.js text query returned ${lunrMatchedUrls.size} candidate match(es).`);
 
       } catch (err) {
-        console.warn('Lunr query execution error, falling back to direct JSON array inspection:', err);
-        
-        const locTerm = locationQuery.toLowerCase();
-        const nameTerm = nameQuery.toLowerCase();
-        const detTerm = detailsQuery.toLowerCase();
-        const ctryTerm = selectedCountry.toLowerCase();
-
-        rawData.forEach(item => {
-          const itemLocs = normalizeString(item.locations);
-          const itemCtry = normalizeString(item.country);
-          const itemName = normalizeString(item.name);
-          const itemAlt = normalizeString(item.altname);
-          const itemDesc = normalizeString(item.description);
-          const itemGender = normalizeString(item.gender);
-
-          const locMatch = !locTerm || itemLocs.includes(locTerm);
-          const ctryMatch = !ctryTerm || itemCtry.includes(ctryTerm) || itemLocs.includes(ctryTerm);
-          const nameMatch = !nameTerm || itemName.includes(nameTerm) || itemAlt.includes(nameTerm);
-          const detMatch = !detTerm || itemDesc.includes(detTerm);
-          const genderMatch = selectedGenders.length === 0 || selectedGenders.includes(itemGender);
-
-          if (locMatch && ctryMatch && nameMatch && detMatch && genderMatch) {
-            candidateRefs.add(item.url);
-          }
-        });
+        console.warn('Lunr.js execution error, bypassing text candidate filter:', err);
       }
-    } else {
-      console.log('No text or category queries present. Evaluating date range filters across all records.');
-      rawData.forEach(item => candidateRefs.add(item.url));
     }
 
-    console.log(`Candidate pool before exact post-filtering: ${candidateRefs.size} record(s).`);
+    // STEP 2: Items.js Facet and Range Query Construction
+    const itemsFilters = {};
 
-    // 2. Exact Post-Filtering (Active Dates, Country, Gender, Date Ranges)
-    const dataMap = new Map(rawData.map(item => [item.url, item]));
+    if (selectedCountry) {
+      itemsFilters.country_facet = [selectedCountry];
+    }
+
+    if (selectedGenders.length > 0) {
+      itemsFilters.gender_facet = selectedGenders;
+    }
+
+    // People Birth / Death Numeric Ranges
+    if (bAfterActive || bBeforeActive) {
+      itemsFilters.birth_num = {
+        gte: bAfterActive ? bAfterVal : bMin,
+        lte: bBeforeActive ? bBeforeVal : bMax
+      };
+    }
+
+    if (dAfterActive || dBeforeActive) {
+      itemsFilters.death_num = {
+        gte: dAfterActive ? dAfterVal : dMin,
+        lte: dBeforeActive ? dBeforeVal : dMax
+      };
+    }
+
+    // Pseudonym Active Date Range Overlap Evaluation
+    if (hasActiveDateFilters) {
+      const filterMin = actAfterActive ? actAfterVal : actMin;
+      const filterMax = actBeforeActive ? actBeforeVal : actMax;
+
+      itemsFilters.active_end = { gte: filterMin };
+      itemsFilters.active_start = { lte: filterMax };
+    }
+
+    // STEP 3: Execute Items.js Search Pass
+    const itemsjsResult = itemsjsInstance.search({
+      per_page: rawData.length,
+      filters: itemsFilters
+    });
+
+    console.log(`Items.js filter query returned ${itemsjsResult.data.items.length} item(s):`, itemsjsResult);
+
+    // STEP 4: Intersect Lunr.js Text Candidates with Items.js Results
     const matchingPaths = new Set();
     const matchingIds = new Set();
 
-    candidateRefs.forEach(ref => {
-      const item = dataMap.get(ref);
-      if (!item) return;
-
-      // Robust Active Date Span Overlap Filter for Pseudonyms
-      if (hasActiveDateFilters) {
-        const span = parseActiveSpan(item.active);
-        if (!span) return;
-
-        // Check range overlap: item active range must intersect slider bounds [actAfterVal, actBeforeVal]
-        const filterMin = actAfterVal !== null ? actAfterVal : actMin;
-        const filterMax = actBeforeVal !== null ? actBeforeVal : actMax;
-
-        if (span.end < filterMin || span.start > filterMax) return;
+    itemsjsResult.data.items.forEach(item => {
+      // If Lunr ran a text query, ensure item URL is in the Lunr candidate set
+      if (lunrMatchedUrls && !lunrMatchedUrls.has(item.url)) {
+        return;
       }
-
-      // Strict Country Filter
-      if (selectedCountry) {
-        const itemCtry = normalizeString(item.country);
-        const itemLocs = normalizeString(item.locations);
-        const matchesCountry = itemCtry.includes(selectedCountry) || itemLocs.includes(selectedCountry);
-        if (!matchesCountry) return;
-      }
-
-      // Strict Gender Exact Match Filter
-      if (selectedGenders.length > 0) {
-        const itemGender = normalizeString(item.gender);
-        if (!selectedGenders.includes(itemGender)) return;
-      }
-
-      // Date Range Filters for People
-      const birthYear = parseYear(item.birth);
-      const deathYear = parseYear(item.death);
-
-      if (bAfterActive && (birthYear === null || birthYear < bAfterVal)) return;
-      if (bBeforeActive && (birthYear === null || birthYear > bBeforeVal)) return;
-      if (dAfterActive && (deathYear === null || deathYear < dAfterVal)) return;
-      if (dBeforeActive && (deathYear === null || deathYear > dBeforeVal)) return;
 
       matchingPaths.add(cleanPath(item.url));
       matchingIds.add(extractId(item.url));
     });
 
-    console.log(`Final matching path set (${matchingPaths.size}):`, Array.from(matchingPaths));
+    console.log(`Final combined matching path set (${matchingPaths.size}):`, Array.from(matchingPaths));
 
     applyPageFilter(matchingPaths, matchingIds, filterState);
     console.groupEnd();
