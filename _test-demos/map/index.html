@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Notes &amp; queries map</title>
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css"
+    />
+    <script src="https://public.codepenassets.com/js/prefixfree-1.0.7.min.js"></script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
+
+
+    <!-- Map custom code and data -->
+
+    <script type="module" src="../../assets/js/map.js"></script>
+
+
+    <!-- Map styles (to be incorporated into the main sheet) -->
+
+    <style>
+      #nq-map {
+        height: 600px;
+        width: 80%;
+      }
+
+      .cluster-marker circle {
+        fill: #437456;
+      }
+
+      .cluster-marker .details-icon {
+        fill: white;
+        
+      }
+
+      .cluster-marker .details-icon rect {
+        fill: transparent;
+      }
+
+      .cluster-marker text {
+        fill: white;
+        text-anchor: middle;
+        font-family: sans-serif;
+        font-size: 12;
+      }
+    </style>
+  </head>
+
+  <body>
+    <h1>Map demo </h1>
+    <div id="nq-map"></div>
+  </body>
+  <script type="module" src="index.js"></script>
+</html>
