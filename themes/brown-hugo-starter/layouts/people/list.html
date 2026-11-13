@@ -1,48 +1,49 @@
-{{ partial "header.html" . }}
-<h1>{{ .Title }}</h1>
+{{ define "main" }}
+<h1 class="page-title">{{ .Title }}</h1>
 
 <nav class="filters">
   <form id="people-search" class="search" role="search">
     <div class="scoop">
       <div class="search-field">
-        <label for="search-name">Search by name</label>
+        <label for="search-name" class="label">Search by name</label>
         <input type="search" id="search-name" class="search-input" placeholder="e.g. Emilia Francis Dilke">
       </div>
       
       <div class="search-field">
-        <label for="search-details">Search by keyword</label>
+        <label for="search-details"  class="label">Search by keyword</label>
         <input type="search" id="search-details" class="search-input" placeholder="e.g. writer, lawyer, clergy">
       </div>
 
       <div class="search-field">
-        <label for="search-locations">Search location</label>
-        <input type="search" id="search-locations" class="search-input" placeholder="e.g., Swarraton Rectory, Alresford, Winchester, Hampshire, England"></div>
+        <label for="search-locations" class="label">Search location</label>
+        <input type="search" id="search-locations" class="search-input" placeholder="e.g., Swarraton Rectory, Alresford, Winchester, Hampshire, England">
+      </div>
     </div>
 
-    <h2>Filters</h2>
+    <h2  class="label">Filters</h2>
 
     <div class="gender-facet search-field">
       <fieldset>
-        <legend>Gender</legend>
+        <legend class="label">Gender</legend>
         <label for="gender-female">
-        <input type="checkbox" id="gender-female" name="gender" class="gender-checkbox" value="F">
-        Female
-      </label>
-      <label for="gender-male">
-        <input type="checkbox" id="gender-male" name="gender" class="gender-checkbox" value="M">
-        Male
-      </label>
-      <label for="gender-unknown">
-        <input type="checkbox" id="gender-unknown" name="gender" class="gender-checkbox" value="unknown">
-        Unknown
-      </label>      
+          <input type="checkbox" id="gender-female" name="gender" class="gender-checkbox" value="F">
+          Female
+        </label>
+        <label for="gender-male">
+          <input type="checkbox" id="gender-male" name="gender" class="gender-checkbox" value="M">
+          Male
+        </label>
+        <label for="gender-unknown">
+          <input type="checkbox" id="gender-unknown" name="gender" class="gender-checkbox" value="unknown">
+          Unknown
+        </label>      
       </fieldset>
     </div>
 
     <div class="search-field">
-      <label for="search-country">Modern country</label>
+      <label for="search-country" class="label">Location</label>
       <select name="country" id="search-country">
-        <option value="" selected disabled>All countries</option>
+        <option value="" selected disabled>Modern country</option>
         <option value="Australia">Australia</option>
         <option value="Austria">Austria</option>
         <option value="Brazil">Brazil</option>
@@ -72,13 +73,13 @@
 
     <!-- Date Range Sliders -->
     <div class="search-field date-range">
-      <fieldset class="">
-        <legend>Lifespan / Date Ranges</legend>
+      <fieldset>
+        <legend class="label">Lifespan / Date Ranges</legend>
 
         <!-- Birth Multi-Range Slider -->
         <div class="slider-block">
           <div class="slider-header">
-            <span>Birth Range:</span>
+            <span class="label">Birth Range:</span>
             <span class="range-display">
               <output id="out-birth-after">1750</output> – <output id="out-birth-before">1950</output>
             </span>
@@ -93,7 +94,7 @@
         <!-- Death Multi-Range Slider -->
         <div class="slider-block">
           <div class="slider-header">
-            <span>Death Range:</span>
+            <span class="label">Death Range:</span>
             <span class="range-display">
               <output id="out-death-after">1750</output> – <output id="out-death-before">2000</output>
             </span>
@@ -109,85 +110,84 @@
     </div>
     
     <div class="form-mgmt">
-      <button type="submit" class="lozenge">Search</button>
+      <button type="submit" class="button secondary">Search</button>
       <button type="reset">Reset search</button>
     </div>
   </form>
 </nav>
 
-<div id="count">{{ len $.RegularPages }} contributors</div>
+<div id="count">{{ len .RegularPages }} contributors</div>
 
 {{ $groupedPages := .Pages.GroupByParam "glossary" }}
 
 {{ if $groupedPages }}
   {{/* Anchor Navigation Bar */}}
-<div class="glossary-nav">
-  <label for="alphabet-select">View by letter</label>
-  <select id="alphabet-select" aria-label="View by letter section">
-    <option value="" selected disabled>A-Z</option>
-    {{- $firstChars := slice -}}
-    {{- range where .Pages "IsPage" true -}}
-      {{- $firstChar := upper (substr .Title 0 1) -}}
-      {{- $firstChars = $firstChars | append $firstChar -}}
-    {{- end -}}
-    {{- range ($firstChars | uniq | sort) -}}
-      <option value="#letter-{{ . }}">{{ . }}</option>
-    {{- end -}}
-  </select>
-</div>
+  <div class="glossary-nav">
+    <label for="alphabet-select">View by letter</label>
+    <select id="alphabet-select" aria-label="View by letter section">
+      <option value="" selected disabled>A-Z</option>
+      {{- $firstChars := slice -}}
+      {{- range where .Pages "IsPage" true -}}
+        {{- $firstChar := upper (substr .Title 0 1) -}}
+        {{- $firstChars = $firstChars | append $firstChar -}}
+      {{- end -}}
+      {{- range ($firstChars | uniq | sort) -}}
+        <option value="#letter-{{ . }}">{{ . }}</option>
+      {{- end -}}
+    </select>
+  </div>
 
-  <div id="view-map"><a href="" class="knockout">View Map</a></div>
+  <div id="view-map"><a href="{{ relURL "map" }}" class="button primary">View Map</a></div>
 
   <div id="terms" class="search-summary-statement" aria-live="polite"></div>
 
   {{/* Grouped Content Sections */}}
   <div class="listing">
-  {{ range $groupedPages }}
-    {{ $sectionId := cond (ne .Key "") (printf "letter-%s" .Key) "letter-other" }}
+    <button class="scrollToTopBtn">back to top</button>
+    {{ range $groupedPages }}
+      {{ $sectionId := cond (ne .Key "") (printf "letter-%s" .Key) "letter-other" }}
 
-    <section id="{{ $sectionId }}">
-      <h2>
-        {{ if .Key }}
-          {{ .Key }}
-        {{ else }}
-          Other / Uncategorized
-        {{ end }}
-      </h2>
+      <section id="{{ $sectionId }}">
+        <h2>
+          {{ if .Key }}
+            {{ .Key }}
+          {{ else }}
+            Other / Uncategorized
+          {{ end }}
+        </h2>
 
-      <ul class="two-col fancy">
-        {{ range .Pages }}
-          <li data-url="{{ .RelPermalink }}" data-birth="{{ default "" .Params.birth }}" data-death="{{ default "" .Params.death }}">
-            <a href="{{ .RelPermalink }}">{{ .Title }}</a><br>
-            {{/* Build the lifespan string inside parentheses if either birth or death exists */}}
-            {{- if or .Params.birth .Params.death -}}
-              {{- $lifespan := slice -}}
-              
-              {{/* Handle birth year with optional circa */}}
-              {{- if .Params.birth -}}
-                {{- $b := .Params.birth -}}
-                {{- if .Params.circa -}}
-                  {{- $b = printf "%s %s" .Params.circa .Params.birth -}}
+        <ul class="two-col fancy">
+          {{ range .Pages }}
+            <li data-url="{{ .RelPermalink }}" data-birth="{{ default "" .Params.birth }}" data-death="{{ default "" .Params.death }}">
+              <a href="{{ .RelPermalink }}">{{ .Title }}</a><br>
+              {{/* Build the lifespan string inside parentheses if either birth or death exists */}}
+              {{- if or .Params.birth .Params.death -}}
+                {{- $lifespan := slice -}}
+                
+                {{/* Handle birth year with optional circa */}}
+                {{- if .Params.birth -}}
+                  {{- $b := .Params.birth -}}
+                  {{- if .Params.circa -}}
+                    {{- $b = printf "%s %s" .Params.circa .Params.birth -}}
+                  {{- end -}}
+                  {{- $lifespan = $lifespan | append $b -}}
+                {{- else -}}
+                  {{- $lifespan = $lifespan | append "?" -}}
                 {{- end -}}
-                {{- $lifespan = $lifespan | append $b -}}
-              {{- else -}}
-                {{/* If no birth year but death year exists, mark as unknown birth */}}
-                {{- $lifespan = $lifespan | append "?" -}}
-              {{- end -}}
 
-              {{/* Handle death year */}}
-              {{- if .Params.death -}}
-                {{- $lifespan = $lifespan | append .Params.death -}}
-              {{- end -}}
+                {{/* Handle death year */}}
+                {{- if .Params.death -}}
+                  {{- $lifespan = $lifespan | append .Params.death -}}
+                {{- end -}}
 
-              {{/* Format lifespan as (birth–death) or (birth) */}}
-              {{ printf " (%s)" (delimit $lifespan "–") }}
-            {{- end -}}
-          </li>
-        {{ end }}
-      </ul>
-    </section>
-  {{ end }}
+                {{/* Format lifespan as (birth–death) or (birth) */}}
+                {{ printf " (%s)" (delimit $lifespan "–") }}
+              {{- end -}}
+            </li>
+          {{ end }}
+        </ul>
+      </section>
+    {{ end }}
   </div>
 {{ end }}
-
-{{ partial "footer.html" . }}
+{{ end }}

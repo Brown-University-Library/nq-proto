@@ -1,0 +1,41 @@
+{{ $zoom := "" }}
+{{ with "icons/icon-zoom.svg" }}
+  {{ with resources.Get . }}
+    {{ $zoom = . }}
+  {{ else }}
+    {{ errorf "Unable to find %s in the assets directory." . }}
+  {{ end }}
+{{ end }}
+{{ $results := "" }}
+{{ with "icons/icon-external arrow.svg" }}
+  {{ with resources.Get . }}
+    {{ $results = . }}
+  {{ else }}
+    {{ errorf "Unable to find %s in the assets directory." . }}
+  {{ end }}
+{{ end }}
+.cluster-body {
+  position: relative;
+}
+.cluster-btn {
+    appearance: none;
+    font-size: 0;
+    background-repeat: no-repeat;
+    background-size: contain;
+    background-color: transparent;
+    border-width: 0;
+    width: 1rem;
+    height: 1rem;
+    padding: 0.5rem;
+    position: absolute;
+    bottom: 1.75rem;
+
+    &.cluster-btn-zoom {
+        background-image: url("{{ $zoom.RelPermalink }}");
+        left: 1.5rem;
+    }
+    &.cluster-btn-url {
+        background-image: url("{{ $results.RelPermalink }}");
+        right: 3.5rem;
+    }
+}

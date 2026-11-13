@@ -1,9 +1,7 @@
-{{ partial "header.html" . }}
+{{ define "main" }}
+  <article class="single-container">
+    <h1>{{ .Title }}</h1>
 
-<h1>{{ .Title }}</h1>
-
-{{ .TableOfContents }}
-
-{{ .Content }}
-
-{{ partial "footer.html" . }}
+      {{ .Content }}
+  </article>
+{{ end }}

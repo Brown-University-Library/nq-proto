@@ -1,7 +1,7 @@
-{{ partial "header.html" . }}
+{{ define "main"  }}
 
 <h1 class="decorated">{{ .Site.Title | markdownify }}</h1>
 
 {{ .Content }}
 
-{{ partial "footer.html" . }}
+{{ end }}

@@ -109,14 +109,14 @@ document.addEventListener('DOMContentLoaded', () => {
     heading.className = 'search-results-count';
 
     if (!isFiltered) {
-      heading.textContent = count === 1 ? '1 item.' : `${count} items.`;
+      heading.textContent = count === 1 ? '1 item.' : `${count} items`;
     } else {
       if (count === 0) {
         heading.textContent = 'No matching results found.';
       } else if (count === 1) {
-        heading.textContent = '1 matching item.';
+        heading.textContent = '1 matching item';
       } else {
-        heading.textContent = `${count} matching items.`;
+        heading.textContent = `${count} matching items`;
       }
     }
 

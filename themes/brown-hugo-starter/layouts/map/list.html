@@ -1,0 +1,71 @@
+{{ define "main" }}
+<h1>{{ .Title }}</h1>
+
+<nav class="filters">
+  <form id="map-search" class="search" role="search">
+<h2 class="label">Filters</h2>
+    <div class="gender-facet search-field">
+      <fieldset>
+        <legend class="label">Gender</legend>
+        <label for="gender-female">
+          <input type="checkbox" id="gender-female" name="gender" class="gender-checkbox" value="F">
+          Female
+        </label>
+        <label for="gender-male">
+          <input type="checkbox" id="gender-male" name="gender" class="gender-checkbox" value="M">
+          Male
+        </label>
+        <label for="gender-unknown">
+          <input type="checkbox" id="gender-unknown" name="gender" class="gender-checkbox" value="unknown">
+          Unknown
+        </label>      
+      </fieldset>
+    </div>
+
+    <!-- Date Range Sliders -->
+    <div class="search-field date-range">
+      <fieldset>
+        <legend class="label">Lifespan / Date Ranges</legend>
+
+        <!-- Birth Multi-Range Slider -->
+        <div class="slider-block">
+          <div class="slider-header">
+            <span class="label">Birth Range:</span>
+            <span class="range-display">
+              <output id="out-birth-after">1750</output> – <output id="out-birth-before">1950</output>
+            </span>
+          </div>
+          <div class="multi-range-container">
+            <input type="range" id="birth-after" class="range-min" min="1750" max="1950" value="1750" step="1">
+            <input type="range" id="birth-before" class="range-max" min="1750" max="1950" value="1950" step="1">
+            <div class="slider-track"></div>
+          </div>
+        </div>
+
+        <!-- Death Multi-Range Slider -->
+        <div class="slider-block">
+          <div class="slider-header">
+            <span class="label">Death Range:</span>
+            <span class="range-display">
+              <output id="out-death-after">1750</output> – <output id="out-death-before">2000</output>
+            </span>
+          </div>
+          <div class="multi-range-container">
+            <input type="range" id="death-after" class="range-min" min="1750" max="2000" value="1750" step="1">
+            <input type="range" id="death-before" class="range-max" min="1750" max="2000" value="2000" step="1">
+            <div class="slider-track"></div>
+          </div>
+        </div>
+
+      </fieldset>
+    </div>
+    
+    <div class="form-mgmt">
+      <button type="submit" class="button secondary">Search</button>
+      <button type="reset">Reset search</button>
+    </div>
+  </form>
+</nav>
+
+<div id="nq-map"></div>
+{{ end }}

@@ -1,0 +1,31 @@
+{{ with "css/style.css" }}
+  {{ with resources.Get . }}
+    {{ with resources.ExecuteAsTemplate "css/style.css" $ . }}
+      {{ if hugo.IsDevelopment }}
+        <link rel="stylesheet" href="{{ .RelPermalink }}">
+      {{ else }}
+        {{ with . | minify | fingerprint }}
+          <link rel="stylesheet" href="{{ .RelPermalink }}" integrity="{{ .Data.Integrity }}" crossorigin="anonymous">
+        {{ end }}
+      {{ end }}
+    {{ end }}
+  {{ else }}
+    {{ errorf "Unable to find %s in the assets directory." . }}
+  {{ end }}
+{{ end }}
+
+{{ with "css/map.css" }}
+  {{ with resources.Get . }}
+    {{ with resources.ExecuteAsTemplate "css/map.css" $ . }}
+      {{ if hugo.IsDevelopment }}
+        <link rel="stylesheet" href="{{ .RelPermalink }}">
+      {{ else }}
+        {{ with . | minify | fingerprint }}
+          <link rel="stylesheet" href="{{ .RelPermalink }}" integrity="{{ .Data.Integrity }}" crossorigin="anonymous">
+        {{ end }}
+      {{ end }}
+    {{ end }}
+  {{ else }}
+    {{ errorf "Unable to find %s in the assets directory." . }}
+  {{ end }}
+{{ end }}

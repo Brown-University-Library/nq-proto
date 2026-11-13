@@ -1,14 +1,13 @@
-{{ partial "header.html" . }}
-<h1>{{ .Title }}</h1>
+{{ define "main" }}
+    <h1>{{ .Title }}</h1>
 
-<ul class="">
-{{ range.Data.Pages }}
-<li>
-    <a href="{{ .RelPermalink }}">{{ .Title }}</a>
-</li>
+    <ul class="">
+      {{ range .Pages }}
+        <li>
+          <a href="{{ .RelPermalink }}">{{ .Title }}</a>
+        </li>
+      {{ else }}
+        <li>No items found in this section.</li>
+      {{ end }}
+    </ul>
 {{ end }}
-</ul>
-{{ .Content }}
-
-
-{{ partial "footer.html" . }}

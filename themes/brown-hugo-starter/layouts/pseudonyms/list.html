@@ -1,90 +1,84 @@
-{{ partial "header.html" . }}
-<h1>{{ .Title }}</h1>
+{{ define "main" }}
+<h1 class="page-title">{{ .Title }}</h1>
 
 <nav class="filters">
   <form id="pseud-search" class="search" role="search">
     <div class="search-field scoop">
-      <label for="search-input">Search Pseudonyms</label>
+      <label for="search-name">Search Pseudonyms</label>
       <input type="search" id="search-name" class="search-input" placeholder="e.g. Alpha">
     </div>
     
     <div class="search-field date-range">
       <fieldset>
-      <legend>Active Publishing Date</legend>
-      <div class="slider-block">
-      <label class="slider-header">
-        <span>Active between <strong id="out-active-after">1850</strong> and <strong
-            id="out-active-before">1950</strong></span>
-      </label>
-      <div class="multi-range-container">
-        <div class="slider-track"></div>
-        <input type="range" id="active-after" name="active_after" min="1850" max="1949" value="1850"
-          aria-label="Active Year Minimum">
-        <input type="range" id="active-before" name="active_before" min="1851" max="1950" value="1950"
-          aria-label="Active Year Maximum">
-      </div>
-      </div>
+        <legend>Active Publishing Date</legend>
+        <div class="slider-block">
+          <label class="slider-header">
+            <span>Active between <strong id="out-active-after">1850</strong> and <strong id="out-active-before">1950</strong></span>
+          </label>
+          <div class="multi-range-container">
+            <div class="slider-track"></div>
+            <input type="range" id="active-after" name="active_after" min="1850" max="1949" value="1850" aria-label="Active Year Minimum">
+            <input type="range" id="active-before" name="active_before" min="1851" max="1950" value="1950" aria-label="Active Year Maximum">
+          </div>
+        </div>
       </fieldset>
     </div>
 
     <div class="form-mgmt">
-      <button type="submit" class="lozenge">Submit</button>
+      <button type="submit" class="button secondary">Submit</button>
       <button type="reset">Reset filters</button>
     </div>
   </form>
-
 </nav>
 
-<div id="count">{{ len $.RegularPages }} pseudonyms</div>
-
+<div id="count">{{ len .RegularPages }} pseudonyms</div>
 
 {{ $groupedPages := .Pages.GroupByParam "glossary" }}
 
 {{ if $groupedPages }}
   {{/* Anchor Navigation Bar */}}
   <div class="glossary-nav">
-      <label for="alphabet-select">View by letter</label>
-  <select id="alphabet-select" aria-label="View by letter section">
-    <option value="" selected disabled>A-Z</option>
-    {{- $firstChars := slice -}}
-    {{- range where .Pages "IsPage" true -}}
-      {{- $firstChar := upper (substr .Title 0 1) -}}
-      {{- $firstChars = $firstChars | append $firstChar -}}
-    {{- end -}}
-    {{- range ($firstChars | uniq | sort) -}}
-      <option value="#letter-{{ . }}">{{ . }}</option>
-    {{- end -}}
-  </select>
+    <label for="alphabet-select">View by letter</label>
+    <select id="alphabet-select" aria-label="View by letter section">
+      <option value="" selected disabled>A-Z</option>
+      {{- $firstChars := slice -}}
+      {{- range where .Pages "IsPage" true -}}
+        {{- $firstChar := upper (substr .Title 0 1) -}}
+        {{- $firstChars = $firstChars | append $firstChar -}}
+      {{- end -}}
+      {{- range ($firstChars | uniq | sort) -}}
+        <option value="#letter-{{ . }}">{{ . }}</option>
+      {{- end -}}
+    </select>
   </div>
 
-   <div id="terms" class="search-summary-statement" aria-live="polite"></div>
-
+  <div id="terms" class="search-summary-statement" aria-live="polite"></div>
 
   {{/* Grouped Content Sections */}}
-  {{ range $groupedPages }}
   <div class="listing">
+    <button class="scrollToTopBtn">back to top</button>
 
-    {{ $sectionId := cond (ne .Key "") (printf "letter-%s" .Key) "letter-other" }}
+    {{ range $groupedPages }}
+      {{ $sectionId := cond (ne .Key "") (printf "letter-%s" .Key) "letter-other" }}
 
-    <section id="{{ $sectionId }}">
-      <h2>
-        {{ if .Key }}
-          {{ .Key }}
-        {{ else }}
-          Other / Uncategorized
-        {{ end }}
-      </h2>
+      <section id="{{ $sectionId }}">
+        <h2>
+          {{ if .Key }}
+            {{ .Key }}
+          {{ else }}
+            Other / Uncategorized
+          {{ end }}
+        </h2>
 
-      <ul class="two-col fancy">
-        {{ range .Pages }}
-          <li>
-            <a href="{{ .RelPermalink }}">{{ .Title }}</a>
-          </li>
-        {{ end }}
-      </ul>
-    </section>
-  {{ end }}
+        <ul class="two-col fancy">
+          {{ range .Pages }}
+            <li>
+              <a href="{{ .RelPermalink }}">{{ .Title }}</a>
+            </li>
+          {{ end }}
+        </ul>
+      </section>
+    {{ end }}
   </div>
 {{ end }}
-
-{{ partial "footer.html" . }}
+{{ end }}
