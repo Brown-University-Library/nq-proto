@@ -54,20 +54,56 @@
   {{ end }}
 {{ end }}
 
-.button {
+.content {
+a.button,
+button.button {
   appearance: none;
   cursor: pointer;
-  display: inline-block;
-  border: 1px solid darkgreen;
+  display: block;
+  border: 1px solid var(--main);
+  border-bottom-color: var(--main) !important;
   margin: 1rem;
   height: 2rem;
   position: relative;
   background: var(--neutral);
-  color: var(--main);
+  color: var(--main) !important;
   text-align: center;
   transition: all 0.25s ease;
   line-height: 2;
+  @supports(calc-size) {
   width: calc-size(fit-content, size + 2rem);
+  }
+  @supports not (calc-size) {
+    padding: 0 1rem;
+  }
+    &:before {
+    content: '';
+    position: absolute;
+    width: 1.415rem;
+    height: 1.415rem;
+    border-top: 1px solid var(--main);
+    border-left: 1px solid var(--main);
+    top: 0.2rem;
+    left: -0.8rem;
+    background: var(--neutral);
+    transform: rotate(-45deg);
+    transition: all 0.25s ease;
+
+  }
+
+  &:after {
+    content: '';
+    position: absolute;
+    width: 1.41rem;
+    height: 1.41rem;
+    border-top: 1px solid var(--main);
+    border-left: 1px solid var(--main);
+    top: 0.2rem;
+    right: -0.8rem;
+    background: var(--neutral);
+    transform: rotate(135deg);
+      transition: all 0.25s ease;
+  }
 
   &:hover,
   &:active {
@@ -87,36 +123,15 @@
       border-right-color: var(--main);
     }
   }
-
-  &:before {
-    content: '';
-    position: absolute;
-    width: 1.5rem;
-    height: 1.45rem;
-    border-top: 1px solid var(--main);
-    border-left: 1px solid var(--main);
-    top: 0.25rem;
-    left: -0.85rem;
-    background: var(--neutral);
-    transform: rotate(-45deg);
-  }
-
-  &:after {
-    content: '';
-    position: absolute;
-    width: 1.5rem;
-    height: 1.45rem;
-    border-top: 1px solid var(--main);
-    border-left: 1px solid var(--main);
-    top: 4px;
-    right: -0.85rem;
-    background: var(--neutral);
-    transform: rotate(135deg);
+  &:focus {
+    background-color: var(--mint);
+    &:before { background-color: var(--mint);}
+    &:after { background-color: var(--mint);}
   }
 
   &.secondary {
     background-color: var(--main);
-    color: var(--neutral);
+    color: var(--neutral) !important;
     &:before {
       background-color: var(--main);
     }
@@ -147,6 +162,16 @@
       color: var(--main);
       border-top: solid 1px var(--main);
       border-bottom: solid 1px var(--main);
+      &:before {
+        background-color: var(--neutral);
+        border-top-color: var(--main);
+        border-left-color: var(--main);
+      }
+      &:after {
+        background-color: var(--neutral);
+        border-top-color: var(--main);
+        border-right-color: var(--main);
+      }
     }
 
     &:disabled {
@@ -156,6 +181,7 @@
       border-bottom: solid 1px #646464;
     }
   }
+}
 }
 
 {{ $l := "" }}
@@ -262,6 +288,7 @@ body {
       padding: 2rem;
       .search-field {
         margin-bottom: 1rem;
+        position: relative;
       }
       .gender-facet {
         label {
@@ -562,7 +589,6 @@ h5 {
 }
 .content {
   a,
-  a:link,
   a:visited {
     color: var(--ink);
     text-decoration: none;
@@ -659,7 +685,7 @@ form.search {
 
   label {
     display: block;
-
+    margin-right: 1.5rem;
     &:has(:checked) {
       color: var(--main);
       font-weight: 700;
@@ -668,9 +694,11 @@ form.search {
 .form-mgmt {
   button {
     appearance: none;
-    width: 100%;
+    width: -webkit-fill-available;
+    width: stretch;
     &[type="submit"] {
-      max-width: 100%;
+        height: 34px;
+
     }
     &[type="reset"] {
       background-color: transparent;
@@ -777,6 +805,52 @@ option:focus {
   color: var(--neutral);
 }
 
+/* help popovers */
+
+{{ $help := "" }}
+{{ with "icons/icon-tooltip.svg" }}
+  {{ with resources.Get . }}
+    {{ $help = . }}
+  {{ else }}
+    {{ errorf "Unable to find %s in the assets directory." . }}
+  {{ end }}
+{{ end }}
+
+button.help {
+  appearance: none;
+  font-size: 0;
+  border-width: 0;
+  background-color: var(--main);
+  background-image: url("{{ $help.RelPermalink }}");
+  background-repeat: no-repeat;
+  background-size: contain;
+  border-radius: 50%;
+  width: 1rem;
+  height: 1rem;
+  position: absolute;
+  top: 0.5rem;
+  right: 0;
+  cursor: pointer;
+}
+.help-popover {
+  background-color: var(--main);
+  color: var(--neutral);
+  padding: 3rem;
+  button {
+    appearance: none;
+    border-width: 0;
+    color: var(--neutral);
+    background-color: transparent;
+    cursor: pointer;
+    font-style: italic;
+    position: absolute;
+    top: 1.5rem;
+    right: 3rem;
+  }
+}
+::backdrop {
+  backdrop-filter: blur(3px);
+}
 /* DATABASE PAGE */
 .db .content {
   margin: 1rem auto;
@@ -784,12 +858,18 @@ option:focus {
   .card {
     background-color: var(--mint);
     mask: radial-gradient(1rem at 1rem 1rem, #0000 98%, #000) -1rem -1rem;
-    padding: 1rem;
+    padding: 2rem 3rem;
     margin-bottom: 1rem;
+    h1 {
+      text-align: left;
+    }
     h1,
     p.pseud {
       color: var(--main);
     }
+  }
+  section.details {
+    padding: 0 3rem;
   }
   h2,
   h3 {

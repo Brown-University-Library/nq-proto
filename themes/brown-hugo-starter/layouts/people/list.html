@@ -1,21 +1,21 @@
 {{ define "main" }}
-<h1 class="page-title">{{ .Title }}</h1>
+<h1 class="decorated">{{ .Title }}</h1>
 
 <nav class="filters">
   <form id="people-search" class="search" role="search">
     <div class="scoop">
       <div class="search-field">
-        <label for="search-name" class="label">Search by name</label>
+        <label for="search-name" class="label">Search by name</label> <button type="button" class="help" popovertarget="name-popover">Show name search help</button>
         <input type="search" id="search-name" class="search-input" placeholder="e.g. Emilia Francis Dilke">
       </div>
       
       <div class="search-field">
-        <label for="search-details"  class="label">Search by keyword</label>
+        <label for="search-details"  class="label">Search by keyword</label> <button type="button" class="help" popovertarget="keyword-popover">Show keyword search help</button>
         <input type="search" id="search-details" class="search-input" placeholder="e.g. writer, lawyer, clergy">
       </div>
 
       <div class="search-field">
-        <label for="search-locations" class="label">Search location</label>
+        <label for="search-locations" class="label">Search location</label> <button type="button" class="help" popovertarget="location-popover">Show location search help</button>
         <input type="search" id="search-locations" class="search-input" placeholder="e.g., Swarraton Rectory, Alresford, Winchester, Hampshire, England">
       </div>
     </div>
@@ -23,7 +23,7 @@
     <h2  class="label">Filters</h2>
 
     <div class="gender-facet search-field">
-      <fieldset>
+      <fieldset>  
         <legend class="label">Gender</legend>
         <label for="gender-female">
           <input type="checkbox" id="gender-female" name="gender" class="gender-checkbox" value="F">
@@ -190,4 +190,15 @@
     {{ end }}
   </div>
 {{ end }}
+
+{{/* popover content */}}
+<div class="help-popover" id="name-popover" popover><button popovertarget="name-popover" popovertargetaction="hide">
+  Close
+</button><p>The name search includes the alternative name, such as maiden names, middle names, and hyphenates.</p></div>
+<div class="help-popover" id="keyword-popover" popover><button popovertarget="keyword-popover" popovertargetaction="hide">
+  Close
+</button><p>The keyword generally refers to a contributor's profession or vocation, but is not a standarized taxonomy.</p></div>
+<div class="help-popover" id="location-popover" popover><button popovertarget="location-popover" popovertargetaction="hide">
+  Close
+</button><p>The location search includes the "habitat" in NQ, as well as modern towns and cities, counties, and countries.</p></div>
 {{ end }}

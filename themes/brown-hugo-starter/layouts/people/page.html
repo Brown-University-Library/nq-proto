@@ -40,7 +40,7 @@
     <p>{{ printf "%s" . }}</p>
   {{- end -}}
 </div>
-  
+<section class="details">
 {{ if .Params.biography }}
   <h3>Biographical information</h3>
   <p>{{ .Params.biography | safeHTML | markdownify }}</p>
@@ -115,9 +115,9 @@
           <p>{{ .title }}</p>
           <p class="citation">
             {{ .citation }}
-            {{- if and .citation .url }}, {{ end -}}
+            {{- if and .citation .url }} {{ end -}}
             {{- with .url -}}
-              <a href="{{ . }}" target="_blank" rel="noopener">Source</a>
+              [<a href="{{ . }}" target="_blank" rel="noopener">Source</a>]
             {{- end -}}
             {{- with .attribution -}}
             {{- end -}}
@@ -128,4 +128,5 @@
 
   {{ end }}
 {{ end }}
+</section>
 {{ end }}
