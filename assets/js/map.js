@@ -10,10 +10,6 @@ L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_L
 
 // Define popup binding function for individual features
 function onEachFeature(feature, layer) {
-  layer.bindPopup(
-    "<p><a href='https://brown.edu'>" + feature.properties.title + "</a></p>" +
-    "<p>Written by " + feature.properties.signature + " (" + feature.properties.name + ") [" + feature.properties.gender + "], published " + feature.properties.date + ".</p>"
-  );
 }
 
 // Initialize marker cluster group with custom sub-icon markup
