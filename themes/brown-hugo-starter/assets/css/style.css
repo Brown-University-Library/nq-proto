@@ -15,8 +15,7 @@
   position: relative;
   padding: 2rem;
   z-index: 0;
-}
-.scoop:before {
+&:before {
   content: "";
   position: absolute;
   inset: 0;
@@ -34,26 +33,8 @@
         repeat-y;
   z-index: -10;
 }
-
-/* this is a placeholder until I get the SVGs */
-{{ $la := "" }}
-{{ with "icons/icon-carrot-left.svg" }}
-  {{ with resources.Get . }}
-    {{ $la = . }}
-  {{ else }}
-    {{ errorf "Unable to find %s in the assets directory." . }}
-  {{ end }}
-{{ end }}
-
-{{ $ra := "" }}
-{{ with "icons/icon-carrot-right.svg" }}
-  {{ with resources.Get . }}
-    {{ $ra = . }}
-  {{ else }}
-    {{ errorf "Unable to find %s in the assets directory." . }}
-  {{ end }}
-{{ end }}
-
+}
+/* styled lozenge buttons */
 .content {
 a.button,
 button.button {
@@ -83,7 +64,7 @@ button.button {
     height: 1.415rem;
     border-top: 1px solid var(--main);
     border-left: 1px solid var(--main);
-    top: 0.2rem;
+    top: 0.25rem;
     left: -0.8rem;
     background: var(--neutral);
     transform: rotate(-45deg);
@@ -98,7 +79,7 @@ button.button {
     height: 1.41rem;
     border-top: 1px solid var(--main);
     border-left: 1px solid var(--main);
-    top: 0.2rem;
+    top: 0.25rem;
     right: -0.8rem;
     background: var(--neutral);
     transform: rotate(135deg);
@@ -159,7 +140,7 @@ button.button {
 
     &:focus {
       background-color: var(--neutral);
-      color: var(--main);
+      color: var(--main) !important;
       border-top: solid 1px var(--main);
       border-bottom: solid 1px var(--main);
       &:before {
@@ -183,7 +164,7 @@ button.button {
   }
 }
 }
-
+/* decorative elements for page titles */
 {{ $l := "" }}
 {{ with "icons/icon-flourish-left.svg" }}
   {{ with resources.Get . }}
@@ -262,10 +243,15 @@ body {
     .glossary-nav {
       grid-area: glossary-nav;
       justify-self: end;
+      align-self: center;
     }
 
     #count {
       grid-area: count;
+      align-self: center;
+      h2 {
+        margin-bottom: 0;
+      }
     }
 
     #view-map {
@@ -583,6 +569,15 @@ h4,
 h5 {
   margin-top: 0;
   font-weight: 400;
+}
+h1.site-name {
+  text-transform: uppercase;
+  .title-tall {
+    font-size: 70px;
+  }
+  .title-small {
+    font-size: 50px;
+  }
 }
 .listing h2 {
   color: var(--main);

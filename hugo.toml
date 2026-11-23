@@ -1,6 +1,6 @@
 baseURL = 'https://brown-university-library.github.io/nq-proto/'
 locale = 'en-us'
-title = 'Lives and Pseudonyms of Contributors to *Notes and Queries* 1849 - 1949'
+title = 'Lives and Pseudonyms in *Notes and Queries* 1849 - 1949'
 theme = 'brown-hugo-starter'
 sectionPagesMenu = 'main'
 

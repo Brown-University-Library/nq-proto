@@ -3,17 +3,19 @@
 
 <nav class="filters">
   <form id="pseud-search" class="search" role="search">
-    <div class="search-field scoop">
-      <label for="search-name">Search Pseudonyms</label>
+    <div class="scoop">
+    <div class="search-field">
+      <label for="search-name" class="label">Search Pseudonyms</label>  <button type="button" class="help" popovertarget="pseud-popover">Show pseudonym search help</button>
       <input type="search" id="search-name" class="search-input" placeholder="e.g. Alpha">
     </div>
-    
+    </div>
+    <h2 class="label">Filter</h2>
     <div class="search-field date-range">
       <fieldset>
-        <legend>Active Publishing Date</legend>
+        <legend class="label">Active Publishing Date</legend>
         <div class="slider-block">
           <label class="slider-header">
-            <span>Active between <strong id="out-active-after">1850</strong> and <strong id="out-active-before">1950</strong></span>
+            <span class="label">Active between <strong id="out-active-after">1850</strong> and <strong id="out-active-before">1950</strong></span>
           </label>
           <div class="multi-range-container">
             <div class="slider-track"></div>
@@ -81,4 +83,10 @@
     {{ end }}
   </div>
 {{ end }}
+
+{{/* popover content */}}
+<div class="help-popover" id="pseud-popover" popover><button popovertarget="pseud-popover" popovertargetaction="hide">
+  Close
+</button><p>The name search includes the alternative name, such as maiden names, middle names, and hyphenates.</p></div>
+
 {{ end }}
