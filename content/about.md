@@ -3,6 +3,7 @@ date = '2026-06-10T14:01:36-04:00'
 draft = false
 title = 'About'
 weight = 7
+menu = "main"
 +++
 
 _Notes and Queries_ has a unique importance in the history of literary knowledge. For almost a century — from November 3, 1849, when it was first published, until at least April 1, 1939, when Oxford University Press began to publish it and it started to become a more typical professional and academic journal, it was the most important “medium of intercommunication” for “literary men, artists, antiquaries, genealogists, etc.” (1849–1863), for “literary men, general readers, etc.” (1863–1923), and then for “readers and writers, collectors and librarians” (1924–).
