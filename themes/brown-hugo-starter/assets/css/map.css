@@ -16,8 +16,8 @@
 {{ end }}
 .cluster-body {
   position: relative;
-}
-.cluster-btn {
+
+  .cluster-btn {
     appearance: none;
     font-size: 0;
     background-repeat: no-repeat;
@@ -29,13 +29,21 @@
     padding: 0.5rem;
     position: absolute;
     bottom: 1.75rem;
+    cursor: pointer;
 
     &.cluster-btn-zoom {
-        background-image: url("{{ $zoom.RelPermalink }}");
-        left: 1.5rem;
+      background-image: url("{{ $zoom.RelPermalink }}");
+      left: 1.5rem;
     }
+
     &.cluster-btn-url {
-        background-image: url("{{ $results.RelPermalink }}");
-        right: 3.5rem;
+      background-image: url("{{ $results.RelPermalink }}");
+      right: 3.5rem;
     }
+  }
+  &.cluster-no-zoom {
+    .cluster-btn.cluster-btn-url {
+      right: 4.25rem;
+    }
+  }
 }

@@ -38,8 +38,8 @@ def convert_joined_data_to_geojson(input_file, output_file):
                         "standardname": standardname,
                         "authorId": author_id,
                         "gender": gender,
-                        "birth year": birth_year,
-                        "death year": death_year,
+                        "birth_year": birth_year,
+                        "death_year": death_year,
                         "town": article.get("town", ""),
                         "county": article.get("county", ""),
                         "country": article.get("country", "")

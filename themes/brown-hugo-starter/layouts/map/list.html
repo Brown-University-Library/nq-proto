@@ -3,7 +3,7 @@
 
 <nav class="filters">
   <form id="map-search" class="search" role="search">
-<h2 class="label">Filters</h2>
+    <h2 class="label">Filters</h2>
     <div class="gender-facet search-field">
       <fieldset>
         <legend class="label">Gender</legend>
@@ -56,6 +56,12 @@
             <div class="slider-track"></div>
           </div>
         </div>
+
+        <!-- Include Unknown Dates Checkbox (unchecked by default) -->
+        <label for="include-unknown-dates">
+          <input type="checkbox" id="include-unknown-dates" name="include_unknown_dates">
+          Include contributors with undefined dates
+        </label>
 
       </fieldset>
     </div>
